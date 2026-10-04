@@ -4,3 +4,4 @@ node_modules/
 .stop
 .claude-plugin/types/
 __pycache__/
+.vercel
