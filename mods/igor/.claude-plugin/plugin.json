@@ -10,6 +10,12 @@
       "description": "Deepgram language code of what you say (en, fr, es, de...).",
       "default": "en"
     },
+    "keyterms": {
+      "type": "string",
+      "title": "Words to recognise",
+      "description": "Comma-separated names or jargon Deepgram should favour. 'Igor' is the default so it is not heard as 'I car'.",
+      "default": "Igor"
+    },
     "translateTo": {
       "type": "string",
       "title": "Translate into",

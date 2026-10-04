@@ -62,6 +62,7 @@ async function listen($: EngineInterface, mode: Mode, then: 'submit' | 'fill', h
         '--stop-file', stopFile,
         ...envFileArgs(),
         '--language', text('language', 'en'),
+        '--keyterms', text('keyterms', 'Igor'),
         '--device', text('micDevice', 'auto'),
         ...manualStop,
       ],

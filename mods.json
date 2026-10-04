@@ -88,6 +88,11 @@
           "Deepgram language code of what you say; also the speech language of replies"
         ],
         [
+          "keyterms",
+          "Igor",
+          "Names Deepgram should favour; common mishearings (like \"I car\") are corrected"
+        ],
+        [
           "translateTo",
           "English",
           "Target language of the translate chord"

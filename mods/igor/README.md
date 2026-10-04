@@ -27,6 +27,7 @@ Then set your keys, either in the plugin's options (`/config`, stored in secure 
 | Option | Default | Meaning |
 |---|---|---|
 | `language` | `en` | Deepgram language code of what you say; also the speech language of replies |
+| `keyterms` | `Igor` | Comma-separated names Deepgram should favour (and that common mishearings are corrected to) |
 | `translateTo` | `English` | Target language of the translate chord |
 | `speakReplies` | `true` | Read answers aloud when the question was voiced |
 | `voiceStyle` | `robot` | `robot` (buzzing 90s computer), `soft` (grit only) or `plain` (no effect) |
