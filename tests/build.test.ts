@@ -15,28 +15,28 @@ test('escapeHtml neutralises markup', () => {
 })
 
 test('the site has a home page, a page per mod, and its assets', () => {
-  for (const f of ['index.html', 'mods/voice-input/index.html', 'style.css', 'copy.js']) expect(existsSync(`${out}/${f}`)).toBe(true)
+  for (const f of ['index.html', 'mods/igor/index.html', 'style.css', 'copy.js']) expect(existsSync(`${out}/${f}`)).toBe(true)
 })
 
 test('the home page lists every mod and links to its page', () => {
   const home = read('index.html')
   expect(home).toContain('modnest')
-  expect(home).toContain('href="mods/voice-input/"')
-  expect(home).toContain('Voice input')
+  expect(home).toContain('href="mods/igor/"')
+  expect(home).toContain('IGOR')
 })
 
 test('a mod page carries install, options, privacy and limits', () => {
-  const page = read('mods/voice-input/index.html')
+  const page = read('mods/igor/index.html')
   for (const word of ['Install', 'Options', 'What it sends where', 'Known limits', 'Requirements', 'claude --plugin-dir']) expect(page).toContain(word)
   expect(page).toContain('<kbd>Right Ctrl</kbd>')
 })
 
 test('every page says it is unofficial', () => {
-  for (const f of ['index.html', 'mods/voice-input/index.html']) expect(read(f)).toContain('not affiliated with Anthropic')
+  for (const f of ['index.html', 'mods/igor/index.html']) expect(read(f)).toContain('not affiliated with Anthropic')
 })
 
 test('no inline script, no external resource, a strict CSP', () => {
-  for (const f of ['index.html', 'mods/voice-input/index.html']) {
+  for (const f of ['index.html', 'mods/igor/index.html']) {
     const html = read(f)
     expect(html).toContain("Content-Security-Policy")
     expect(html).toContain("default-src 'none'")
@@ -47,7 +47,7 @@ test('no inline script, no external resource, a strict CSP', () => {
 })
 
 test('relative links resolve to files that exist', () => {
-  for (const f of ['index.html', 'mods/voice-input/index.html']) {
+  for (const f of ['index.html', 'mods/igor/index.html']) {
     const base = f.includes('/') ? f.slice(0, f.lastIndexOf('/') + 1) : ''
     for (const [, href] of read(f).matchAll(/(?:href|src)="([^"#:]+)"/g)) {
       const target = `${out}/${base}${href}`.replace(/\/$/, '/index.html')

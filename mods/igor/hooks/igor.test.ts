@@ -23,18 +23,18 @@ function engine(on: (event: string, hook: (...args: any[]) => unknown) => void, 
 }
 const settle = () => new Promise(r => setTimeout(r, 150))
 
-test('/voice fills the prompt with what the microphone heard', async ($, on) => {
+test('/igor fills the prompt with what the microphone heard', async ($, on) => {
   const seen = engine(on as never, { said: 'bonjour Claude' })
-  const ran = await $.command.run({ command: 'voice', args: '' })
-  expect(ran.text).toContain('Listening')
+  const ran = await $.command.run({ command: 'igor', args: '' })
+  expect(ran.text).toContain('listening')
   await settle()
   expect(seen.filled).toEqual(['bonjour Claude'])
   expect(seen.submitted).toEqual([])
 })
 
-test('/voice stop says so when nothing is being recorded', async $ => {
-  const ran = await $.command.run({ command: 'voice', args: 'stop' })
-  expect(ran.text).toContain('Not listening')
+test('/igor stop says so when nothing is being recorded', async $ => {
+  const ran = await $.command.run({ command: 'igor', args: 'stop' })
+  expect(ran.text).toContain('not listening')
 })
 
 test('Right Ctrl: dictates then sends the text to Claude', async ($, on) => {
@@ -50,4 +50,12 @@ test('Right Ctrl + Space: translates and sends directly', async ($, on) => {
   await settle()
   expect(seen.submitted).toEqual(['hello everyone'])
   expect(seen.filled).toEqual([])
+})
+
+test('the IGOR band shows above the prompt, and the hotkey turns it to listening', async ($, on) => {
+  engine(on as never, { key: 'TOGGLE', said: 'bonjour' })
+  const idle = await $.ui.mount({ plugin: 'igor', surface: 'terminal', component: 'AbovePrompt', requestId: 'band', props: { hasSurvey: false } } as never)
+  expect((await idle.find({ type: 'Text', text: /IGOR/ })) !== undefined).toBe(true)
+  expect((await idle.find({ type: 'Text', text: /tap Right Ctrl to talk/ })) !== undefined).toBe(true)
+  await idle.unmount()
 })

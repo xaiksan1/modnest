@@ -1,4 +1,4 @@
-"""speak.py — reads a text aloud: Cartesia text-to-speech -> aplay.
+"""speak.py — IGOR's voice: Cartesia text-to-speech -> ffmpeg robot effect -> aplay.
 
 The text arrives on standard input. Markdown, code and URLs are stripped before
 speaking. The key is read from CARTESIA_API_KEY (or an optional --env file) and
@@ -14,8 +14,17 @@ import tempfile
 import urllib.error
 import urllib.request
 
-VOICE = "f786b574-daa5-4673-aa0c-cbe3e8534c02"     # Cartesia library voice used when --voice is not given
+VOICE = "87286a8d-7ea7-4235-a41a-dd9fa6630feb"     # Cartesia "Henry", a flat male voice: the base of IGOR (used when --voice is not given)
 MODEL, VERSION = "sonic-3", "2025-04-16"
+
+# IGOR's voice: ffmpeg effects over the synthesized speech.
+# robot = phase zeroed in the spectrum (a constant ~125 Hz buzz, the classic 1990s computer voice) + digital grit + metallic echo.
+# soft  = no buzz, just grit and echo.
+STYLES = {
+    "robot": "aresample=16000,afftfilt=real='hypot(re,im)*sin(0)':imag='hypot(re,im)*cos(0)':win_size=128:overlap=0.75,"
+             "acrusher=bits=11:mode=lin:aa=1:mix=0.35,aecho=0.8:0.85:7:0.35,volume=2.2",
+    "soft": "aresample=16000,acrusher=bits=9:mode=lin:aa=1:mix=0.5,aecho=0.8:0.8:12:0.3,volume=1.4",
+}
 
 
 def load_key(env_path: str) -> str:
@@ -46,6 +55,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--env", default="")
     ap.add_argument("--voice", default="")
+    ap.add_argument("--style", default="robot", choices=["robot", "soft", "plain"])
     ap.add_argument("--language", default="fr")
     ap.add_argument("--device", default="default")
     a = ap.parse_args()
@@ -74,10 +84,28 @@ def main() -> None:
         return
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
         f.write(wav)
+    played = f.name
+    paths = [f.name]
     try:
-        subprocess.run(["aplay", "-q", "-D", a.device, f.name], check=False)
+        if a.style != "plain":
+            played = f.name + ".igor.wav"
+            paths.append(played)
+            try:
+                done = subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", f.name, "-af", STYLES[a.style], "-ar", "24000", played],
+                                      capture_output=True, timeout=30)
+                if done.returncode != 0:
+                    played = f.name
+                    print("ERR\tffmpeg failed, plain voice used", flush=True)
+            except (OSError, subprocess.TimeoutExpired):
+                played = f.name
+                print("ERR\tffmpeg not found, plain voice used", flush=True)
+        subprocess.run(["aplay", "-q", "-D", a.device, played], check=False)
     finally:
-        os.unlink(f.name)
+        for path in paths:
+            try:
+                os.unlink(path)
+            except OSError:
+                pass
 
 
 if __name__ == "__main__":

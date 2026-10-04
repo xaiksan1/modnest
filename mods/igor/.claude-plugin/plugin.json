@@ -1,0 +1,99 @@
+{
+  "name": "igor",
+  "version": "0.3.0",
+  "description": "IGOR: a robot voice for Claude Code on Linux/X11. Tap Right Ctrl to talk, Right Ctrl + Space to translate, and IGOR answers aloud.",
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "language": {
+      "type": "string",
+      "title": "Spoken language",
+      "description": "Deepgram language code of what you say (en, fr, es, de...).",
+      "default": "en"
+    },
+    "translateTo": {
+      "type": "string",
+      "title": "Translate into",
+      "description": "Language name for Right Ctrl + Space (e.g. English, French, Spanish).",
+      "default": "English"
+    },
+    "speakReplies": {
+      "type": "boolean",
+      "title": "Speak replies",
+      "description": "IGOR reads Claude's answer aloud when you sent the question by voice.",
+      "default": true
+    },
+    "voiceId": {
+      "type": "string",
+      "title": "Cartesia voice id",
+      "description": "Cartesia voice id. Empty = Henry, a flat male voice that suits the robot effect.",
+      "default": ""
+    },
+    "micDevice": {
+      "type": "string",
+      "title": "Microphone (ALSA)",
+      "description": "'auto' prefers a USB microphone; otherwise an ALSA device such as plughw:1,0 (see `arecord -l`).",
+      "default": "auto"
+    },
+    "speakerDevice": {
+      "type": "string",
+      "title": "Speaker (ALSA)",
+      "description": "ALSA playback device; 'default' is the system default.",
+      "default": "default"
+    },
+    "python": {
+      "type": "string",
+      "title": "Python command",
+      "description": "Python 3 used for the helper scripts (standard library only).",
+      "default": "python3"
+    },
+    "envFile": {
+      "type": "string",
+      "title": "Env file with the API keys",
+      "description": "Optional path to a file containing DEEPGRAM_API_KEY=... and CARTESIA_API_KEY=... lines, read by the helpers (never printed). Alternative to the key options or your shell environment.",
+      "default": ""
+    },
+    "toggleKeycode": {
+      "type": "number",
+      "title": "Dictation key (X11 keycode)",
+      "description": "105 = Right Ctrl. Find others with `xmodmap -pke`.",
+      "default": 105
+    },
+    "chordKeycode": {
+      "type": "number",
+      "title": "Translate chord key (X11 keycode)",
+      "description": "Pressed while the dictation key is held. 65 = Space.",
+      "default": 65
+    },
+    "deepgramApiKey": {
+      "type": "string",
+      "title": "Deepgram API key",
+      "description": "Speech-to-text. Or set DEEPGRAM_API_KEY in your environment.",
+      "sensitive": true,
+      "default": ""
+    },
+    "cartesiaApiKey": {
+      "type": "string",
+      "title": "Cartesia API key",
+      "description": "Text-to-speech (optional). Or set CARTESIA_API_KEY in your environment.",
+      "sensitive": true,
+      "default": ""
+    },
+    "voiceStyle": {
+      "type": "string",
+      "title": "IGOR's voice",
+      "description": "robot (buzzing 90s computer), soft (grit only) or plain (no effect; also the fallback without ffmpeg).",
+      "default": "robot",
+      "options": [
+        "robot",
+        "soft",
+        "plain"
+      ]
+    },
+    "showBand": {
+      "type": "boolean",
+      "title": "Show IGOR above the prompt",
+      "description": "A one-line band showing what IGOR is doing.",
+      "default": true
+    }
+  }
+}

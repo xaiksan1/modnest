@@ -8,12 +8,16 @@
   },
   "mods": [
     {
-      "id": "voice-input",
-      "title": "Voice input",
-      "version": "0.2.0",
-      "tagline": "Tap a key to talk to Claude Code, and hear it answer.",
-      "summary": "Hands-free voice for the terminal: dictate, translate in one key, and have Claude's answers read aloud.",
+      "id": "igor",
+      "title": "IGOR",
+      "version": "0.3.0",
+      "tagline": "A robot voice for Claude Code: tap a key, talk, and IGOR answers.",
+      "summary": "Hands-free voice for the terminal, with a 1990s computer for a voice: dictate, translate in one key, and hear IGOR read Claude's answers aloud, with a live band above your prompt.",
       "does": [
+        {
+          "keys": [],
+          "text": "A one-line IGOR band above the prompt shows what it is doing: waiting, listening (with a moving level meter), thinking or speaking."
+        },
         {
           "keys": [
             "Right Ctrl"
@@ -29,7 +33,7 @@
         },
         {
           "keys": [],
-          "text": "When you asked by voice, Claude's answer is read aloud. Long answers are first condensed into a few spoken sentences; code and paths are not read out."
+          "text": "When you asked by voice, IGOR reads Claude's answer aloud in a buzzing robot voice (a flat male voice run through an ffmpeg effect). Long answers are first condensed into a few spoken sentences; code and paths are not read out."
         },
         {
           "keys": [
@@ -40,25 +44,25 @@
       ],
       "commands": [
         {
-          "name": "/voice",
+          "name": "/igor",
           "text": "Fill the prompt with the dictation instead of sending it."
         },
         {
-          "name": "/voice go",
+          "name": "/igor go",
           "text": "Dictate and send."
         },
         {
-          "name": "/voice stop",
+          "name": "/igor stop",
           "text": "End a recording."
         },
         {
-          "name": "/voice mute",
-          "text": "Toggle spoken replies."
+          "name": "/igor mute",
+          "text": "Toggle IGOR's voice."
         }
       ],
       "requirements": [
         "Linux with an X11 session (not Wayland, macOS or Windows: the hotkey is read with xinput)",
-        "arecord and aplay (alsa-utils), xinput, and Python 3. The helpers use the standard library only: nothing to pip install",
+        "arecord and aplay (alsa-utils), xinput, ffmpeg (for the robot voice) and Python 3. The helpers use the standard library only: nothing to pip install",
         "A Deepgram API key for speech-to-text",
         "Optional: a Cartesia API key to hear replies"
       ],
@@ -69,11 +73,11 @@
         },
         {
           "label": "Load the mod",
-          "command": "claude --plugin-dir modnest/mods/voice-input"
+          "command": "claude --plugin-dir modnest/mods/igor"
         },
         {
           "label": "Check it",
-          "command": "claude plugin validate modnest/mods/voice-input"
+          "command": "claude plugin validate modnest/mods/igor"
         }
       ],
       "installNote": "Then set your keys in the plugin's options (/config, kept in secure storage) or in your shell environment as DEEPGRAM_API_KEY and CARTESIA_API_KEY. Never put keys in a file you commit.",
@@ -94,9 +98,19 @@
           "Read answers aloud when the question was voiced"
         ],
         [
+          "voiceStyle",
+          "robot",
+          "IGOR's voice: robot (buzzing 90s computer), soft (grit only) or plain (no effect)"
+        ],
+        [
           "voiceId",
           "(empty)",
-          "Cartesia voice id; empty uses a default library voice"
+          "Cartesia voice id; empty uses Henry, a flat male voice that suits the robot effect"
+        ],
+        [
+          "showBand",
+          "true",
+          "Show the IGOR band above the prompt"
         ],
         [
           "micDevice",
@@ -122,7 +136,7 @@
       "privacy": [
         "Your microphone audio goes to Deepgram while you record.",
         "The text of Claude's answer, or its condensed version, goes to Cartesia when replies are spoken.",
-        "Translating and condensing use a small haiku call through your own Claude Code session.",
+        "Translating and condensing use a small haiku call through your own Claude Code session. The robot effect runs locally with ffmpeg.",
         "The hotkey helper reads every X11 key event with xinput and keeps only Right Ctrl and the chord key; every other key is dropped on the spot, nothing is stored or written. It is about sixty lines: read bin/hotkey.py before enabling it."
       ],
       "limits": [
