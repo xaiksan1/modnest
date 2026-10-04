@@ -1,0 +1,18 @@
+{
+  "name": "voice-input",
+  "version": "0.2.0",
+  "description": "Hands-free voice for Claude Code on Linux/X11: tap Right Ctrl to dictate and send, Right Ctrl + Space to translate and send, and hear Claude's replies spoken back.",
+  "userConfig": {
+    "language": { "type": "string", "title": "Spoken language", "description": "Deepgram language code of what you say (en, fr, es, de...).", "default": "en" },
+    "translateTo": { "type": "string", "title": "Translate into", "description": "Language name for Right Ctrl + Space (e.g. English, French, Spanish).", "default": "English" },
+    "speakReplies": { "type": "boolean", "title": "Speak replies", "description": "Read Claude's answer aloud when you sent the question by voice.", "default": true },
+    "voiceId": { "type": "string", "title": "Cartesia voice id", "description": "Leave empty for the default Cartesia library voice.", "default": "" },
+    "micDevice": { "type": "string", "title": "Microphone (ALSA)", "description": "'auto' prefers a USB microphone; otherwise an ALSA device such as plughw:1,0 (see `arecord -l`).", "default": "auto" },
+    "speakerDevice": { "type": "string", "title": "Speaker (ALSA)", "description": "ALSA playback device; 'default' is the system default.", "default": "default" },
+    "python": { "type": "string", "title": "Python command", "description": "Python 3 used for the helper scripts (standard library only).", "default": "python3" },
+    "toggleKeycode": { "type": "number", "title": "Dictation key (X11 keycode)", "description": "105 = Right Ctrl. Find others with `xmodmap -pke`.", "default": 105 },
+    "chordKeycode": { "type": "number", "title": "Translate chord key (X11 keycode)", "description": "Pressed while the dictation key is held. 65 = Space.", "default": 65 },
+    "deepgramApiKey": { "type": "string", "title": "Deepgram API key", "description": "Speech-to-text. Or set DEEPGRAM_API_KEY in your environment.", "sensitive": true, "default": "" },
+    "cartesiaApiKey": { "type": "string", "title": "Cartesia API key", "description": "Text-to-speech (optional). Or set CARTESIA_API_KEY in your environment.", "sensitive": true, "default": "" }
+  }
+}

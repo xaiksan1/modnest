@@ -7,7 +7,7 @@ type Mod = {
   install: { label: string; command: string }[]; installNote: string
   options: [string, string, string][]; privacy: string[]; limits: string[]
 }
-type Data = { site: { name: string; tagline: string; intro: string; status: string }; mods: Mod[] }
+type Data = { site: { name: string; tagline: string; intro: string; status: string; repo: string }; mods: Mod[] }
 
 export const escapeHtml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
@@ -36,7 +36,7 @@ const page = (root: string, title: string, description: string, body: string, da
 ${body}
 </div></main>
 <footer><div class="wrap">
-<p>modnest is an independent project, not affiliated with Anthropic. Claude and Claude Code are products of Anthropic.</p>
+<p>modnest is an independent project, not affiliated with Anthropic. Claude and Claude Code are products of Anthropic. <a href="${e(data.site.repo)}" rel="noopener">Source on GitHub</a>.</p>
 </div></footer>
 ${withScript ? `<script src="${root}copy.js"></script>` : ''}
 </body>

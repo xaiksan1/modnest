@@ -41,7 +41,8 @@ test('no inline script, no external resource, a strict CSP', () => {
     expect(html).toContain("Content-Security-Policy")
     expect(html).toContain("default-src 'none'")
     expect(html).not.toMatch(/<script(?![^>]*\bsrc=)/i)
-    expect(html).not.toMatch(/(?:src|href)="https?:\/\//i)
+    expect(html).not.toMatch(/src="https?:\/\//i)                                  // nothing loaded from elsewhere
+    for (const [, href] of html.matchAll(/href="(https?:\/\/[^"]*)"/g)) expect(href).toBe('https://github.com/xaiksan1/modnest')  // the only outside link
   }
 })
 
