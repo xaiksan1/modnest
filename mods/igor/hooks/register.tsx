@@ -91,7 +91,7 @@ async function listen($: EngineInterface, mode: Mode, then: 'submit' | 'fill', h
   if (!heard) {
     await setPhase($, rest())
     $.ui.toast(`IGOR: ${problem || 'nothing received'}`)
-    if (options.phrases !== false && text('voiceEngine', 'machine') === 'machine') void talk($, 'I did not hear you. Please, repeat.').catch(() => undefined)
+    if (options.phrases !== false && text('voiceEngine', 'cartesia') === 'machine') void talk($, 'I did not hear you. Please, repeat.').catch(() => undefined)
     return
   }
 
@@ -132,7 +132,7 @@ const machineLanguage = () => {
 // IGOR reads Claude's reply aloud. A machine voice speaks one language, so the reply is first turned into a short
 // spoken message in that language; a human-like voice only condenses a long reply.
 async function say($: EngineInterface, answer: string) {
-  const isMachine = text('voiceEngine', 'machine') === 'machine'
+  const isMachine = text('voiceEngine', 'cartesia') === 'machine'
   let spoken = answer
   const isPlainAscii = !/[^\x00-\x7f]/.test(answer)
   if (isMachine ? !(isPlainAscii && answer.length <= 350) : answer.length > 350) {
@@ -165,14 +165,14 @@ async function talk($: EngineInterface, spoken: string) {
       argv: [
         python(), `${root}/bin/speak.py`,
         ...envFileArgs(),
-        '--engine', text('voiceEngine', 'machine'),
+        '--engine', text('voiceEngine', 'cartesia'),
         '--machine-voice', text('machineVoice', 'en-us+klatt4'),
         '--machine-rate', String(Number(options.machineRate ?? 155)),
         '--machine-wordgap', String(Number(options.machineWordGap ?? 4)),
         '--language', text('language', 'en'),
         '--voice', text('voiceId'),
-        '--style', text('voiceStyle', 'robot'),
-        '--speed', String(Number(options.voiceSpeed ?? 0.9)),
+        '--style', text('voiceStyle', 'plain'),
+        '--speed', String(Number(options.voiceSpeed ?? 1)),
         '--device', text('speakerDevice', 'default'),
       ],
       env: keysEnv(),
@@ -252,7 +252,7 @@ export const register: Register = (on, config) => {
       description: 'IGOR voice: /igor (dictate into the prompt), /igor go (dictate and send), /igor stop, /igor mute. Hotkey: Right Ctrl.',
     })
 
-    if (options.phrases !== false && text('voiceEngine', 'machine') === 'machine') {
+    if (options.phrases !== false && text('voiceEngine', 'cartesia') === 'machine') {
       void talk($, 'Igor online. I am ready, when you are.').catch(() => undefined)
     }
     ticker?.cancel()

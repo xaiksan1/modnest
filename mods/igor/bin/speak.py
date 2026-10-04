@@ -1,4 +1,4 @@
-"""speak.py — IGOR's voice: by default a local formant synthesizer (eSpeak NG); optionally Cartesia text-to-speech -> ffmpeg robot effect -> aplay.
+"""speak.py — IGOR's voice: by default Cartesia text-to-speech -> aplay (optionally an ffmpeg robot effect, or a local eSpeak NG machine voice).
 
 The text arrives on standard input. Markdown, code and URLs are stripped before
 speaking. The key is read from CARTESIA_API_KEY (or an optional --env file) and
@@ -15,7 +15,7 @@ import urllib.error
 import urllib.request
 import wave
 
-VOICE = "87286a8d-7ea7-4235-a41a-dd9fa6630feb"     # Cartesia "Henry", a flat male voice: the base of IGOR (used when --voice is not given)
+VOICE = "f786b574-daa5-4673-aa0c-cbe3e8534c02"     # Cartesia "Katie", IGOR's original voice (used when --voice is not given)
 MODEL, VERSION = "sonic-3", "2025-04-16"
 
 # IGOR's voice: ffmpeg effects over the synthesized speech.
@@ -84,12 +84,12 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--env", default="")
     ap.add_argument("--voice", default="")
-    ap.add_argument("--engine", default="machine", choices=["machine", "cartesia"], help="machine = eSpeak NG formant synthesizer (local), cartesia = human-like cloud voice")
+    ap.add_argument("--engine", default="cartesia", choices=["machine", "cartesia"], help="cartesia = human-like cloud voice, machine = eSpeak NG formant synthesizer (local)")
     ap.add_argument("--machine-voice", default="en-us+klatt4")
     ap.add_argument("--machine-rate", type=int, default=155, help="eSpeak words per minute at speed 1.0")
     ap.add_argument("--machine-wordgap", type=int, default=4, help="extra pause between words, in 10 ms units")
-    ap.add_argument("--style", default="robot", choices=["robot", "soft", "plain"])
-    ap.add_argument("--speed", type=float, default=0.9, help="speaking speed, 0.5 (slow) to 2.0 (fast); 1.0 = as synthesized")
+    ap.add_argument("--style", default="plain", choices=["robot", "soft", "plain"])
+    ap.add_argument("--speed", type=float, default=1.0, help="speaking speed, 0.5 (slow) to 2.0 (fast); 1.0 = as synthesized")
     ap.add_argument("--language", default="fr")
     ap.add_argument("--device", default="default")
     a = ap.parse_args()

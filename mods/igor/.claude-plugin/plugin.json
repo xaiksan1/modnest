@@ -1,7 +1,7 @@
 {
   "name": "igor",
   "version": "0.3.0",
-  "description": "IGOR: a robot voice for Claude Code on Linux/X11. Tap Right Ctrl to talk, Right Ctrl + Space to translate, and IGOR answers aloud.",
+  "description": "IGOR: a voice for Claude Code on Linux/X11. Tap Right Ctrl to talk, Right Ctrl + Space to translate, and IGOR answers aloud, with a ringing phone when it is your turn.",
   "types": "./types/index.d.ts",
   "userConfig": {
     "language": {
@@ -31,7 +31,7 @@
     "voiceId": {
       "type": "string",
       "title": "Cartesia voice id",
-      "description": "Cartesia voice id. Empty = Henry, a flat male voice that suits the robot effect.",
+      "description": "Cartesia voice id. Empty = IGOR's original voice (Katie).",
       "default": ""
     },
     "micDevice": {
@@ -87,17 +87,17 @@
     "voiceEngine": {
       "type": "string",
       "title": "IGOR's engine",
-      "description": "machine = a real formant synthesizer (eSpeak NG, local, like 90s computers; speaks the language of its voice), cartesia = a human-like cloud voice with an optional robot effect.",
-      "default": "machine",
+      "description": "cartesia = a human-like cloud voice (default); machine = a formant synthesizer (eSpeak NG, local, no key; speaks one language, so replies are condensed and translated into it).",
+      "default": "cartesia",
       "options": [
-        "machine",
-        "cartesia"
+        "cartesia",
+        "machine"
       ]
     },
     "machineVoice": {
       "type": "string",
       "title": "Machine voice (eSpeak NG)",
-      "description": "eSpeak NG voice name, language and variant (en-us+klatt4, fr+klatt, en+m3...). Replies are condensed and translated into this voice's language before being spoken.",
+      "description": "Machine engine only: eSpeak NG voice name, language and variant (en-us+klatt4, fr+klatt...). Replies are condensed and translated into this voice's language before being spoken.",
       "default": "en-us+klatt4"
     },
     "machineRate": {
@@ -115,19 +115,19 @@
     "voiceStyle": {
       "type": "string",
       "title": "IGOR's voice",
-      "description": "For the cartesia engine only: robot (buzzing 90s computer), soft (grit only) or plain (no effect).",
-      "default": "robot",
+      "description": "Cartesia engine only: plain (no effect), robot (buzzing 90s computer) or soft (grit only).",
+      "default": "plain",
       "options": [
+        "plain",
         "robot",
-        "soft",
-        "plain"
+        "soft"
       ]
     },
     "voiceSpeed": {
       "type": "number",
       "title": "IGOR's speaking speed",
-      "description": "0.5 (slow) to 2.0 (fast); 1.0 is the voice as synthesized. Some voices talk fast: lower it if you cannot follow.",
-      "default": 0.9
+      "description": "0.5 (slow) to 2.0 (fast); 1.0 is the voice as synthesized. Lower it if a voice talks too fast.",
+      "default": 1.0
     },
     "showBand": {
       "type": "boolean",
