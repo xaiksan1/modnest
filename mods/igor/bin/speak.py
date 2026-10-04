@@ -67,7 +67,7 @@ def speak_machine(text: str, a) -> None:
     """IGOR's real machine voice: a formant synthesizer, rendered locally, no network and no key."""
     try:
         import espeak_say
-        pcm, rate = espeak_say.synth(text, a.machine_voice, int(155 * min(2.0, max(0.5, a.speed))), 35, 15, 2)
+        pcm, rate = espeak_say.synth(text, a.machine_voice, int(a.machine_rate * min(2.0, max(0.5, a.speed))), 35, 15, a.machine_wordgap)
     except Exception as e:
         print(f"ERR\teSpeak NG failed ({e.__class__.__name__}: {e})", flush=True)
         return
@@ -86,6 +86,8 @@ def main() -> None:
     ap.add_argument("--voice", default="")
     ap.add_argument("--engine", default="machine", choices=["machine", "cartesia"], help="machine = eSpeak NG formant synthesizer (local), cartesia = human-like cloud voice")
     ap.add_argument("--machine-voice", default="en-us+klatt4")
+    ap.add_argument("--machine-rate", type=int, default=155, help="eSpeak words per minute at speed 1.0")
+    ap.add_argument("--machine-wordgap", type=int, default=4, help="extra pause between words, in 10 ms units")
     ap.add_argument("--style", default="robot", choices=["robot", "soft", "plain"])
     ap.add_argument("--speed", type=float, default=0.9, help="speaking speed, 0.5 (slow) to 2.0 (fast); 1.0 = as synthesized")
     ap.add_argument("--language", default="fr")

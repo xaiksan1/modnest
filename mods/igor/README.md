@@ -4,7 +4,8 @@ A robot voice for [Claude Code](https://code.claude.com), as a mod (a plugin of 
 
 - **Tap Right Ctrl** → speak → **tap again**: your words are transcribed and sent to Claude.
 - **Right Ctrl + Space** → speak → tap: your words are transcribed, **translated** (default: into English) and sent.
-- A one-line **IGOR band** above the prompt shows what it is doing (waiting, listening with a moving level meter, thinking, speaking).
+- A one-line **IGOR band** above the prompt shows what it is doing: listening (with a moving level meter), thinking, speaking, and, when Claude has finished and waits for you, a **ringing telephone** (with an optional old-fashioned bell: `ringSound`).
+- IGOR has a few lines of its own: a greeting when the session starts and a line when it did not hear you (`phrases`).
 - When you sent the question by voice, **IGOR reads Claude's answer aloud** with a real machine voice: eSpeak NG, a formant synthesizer in the spirit of 1990s computers, rendered locally (no key, no network). A machine voice speaks one language (English by default), so the reply is first turned into a short spoken message in that language. A human-like cloud voice (Cartesia) with an optional robot effect is available as `voiceEngine: cartesia`. Long answers are first condensed into a few spoken sentences; code and paths are not read out. Tap the key while Claude talks to cut it off and start your next question.
 - `/igor` fills the prompt instead of sending (`/igor go` sends, `/igor stop` ends a recording, `/igor mute` toggles speech).
 
@@ -33,6 +34,9 @@ Then set your keys, either in the plugin's options (`/config`, stored in secure 
 | `voiceEngine` | `machine` | `machine` (eSpeak NG, local) or `cartesia` (human-like cloud voice) |
 | `machineVoice` | `en-us+klatt4` | eSpeak NG voice and variant (`fr+klatt`, `en+m3`...); replies are turned into this voice's language before speaking |
 | `voiceStyle` | `robot` | `robot` (buzzing 90s computer), `soft` (grit only) or `plain` (no effect) |
+| `machineRate` / `machineWordGap` | `155` / `4` | Rhythm of the machine voice: words per minute and the pause between words |
+| `ringSound` | `false` | Play a telephone bell when it is your turn |
+| `phrases` | `true` | IGOR's own spoken lines |
 | `voiceSpeed` | `0.9` | Speaking speed from 0.5 (slow) to 2.0 (fast); some voices talk fast |
 | `voiceId` | _(empty)_ | Cartesia voice id; empty = Henry, a flat male voice |
 | `showBand` | `true` | Show the IGOR band above the prompt |

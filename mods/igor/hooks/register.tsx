@@ -31,6 +31,13 @@ const keysEnv = (): Record<string, string> => {
 const message = (error: unknown) => (error instanceof Error ? error.message : String(error))
 const rest = (): Phase => (isMuted ? 'muted' : 'idle')
 
+// Claude has finished: the phone rings until you answer.
+async function waitForYou($: EngineInterface, isAnswer: boolean) {
+  if (listening || isSpeaking) return
+  await setPhase($, isAnswer && !isMuted ? 'waiting' : rest())
+  if (isAnswer) ring($)
+}
+
 async function setPhase($: EngineInterface, next: Phase) {
   currentPhase = next
   await update($, phase, () => next)
@@ -84,6 +91,7 @@ async function listen($: EngineInterface, mode: Mode, then: 'submit' | 'fill', h
   if (!heard) {
     await setPhase($, rest())
     $.ui.toast(`IGOR: ${problem || 'nothing received'}`)
+    if (options.phrases !== false && text('voiceEngine', 'machine') === 'machine') void talk($, 'I did not hear you. Please, repeat.').catch(() => undefined)
     return
   }
 
@@ -133,7 +141,8 @@ async function say($: EngineInterface, answer: string) {
       model: 'haiku',
       prompt:
         `Here is a coding assistant's reply to the user. Turn it into a short spoken message ${language}: ` +
-        '2 to 4 plain sentences, no markdown, no code, no paths or commands to spell out, no abbreviations or symbols ' +
+        '2 to 4 short plain sentences, one idea each, with commas where a speaker would pause, like an old computer reading carefully; ' +
+        'no markdown, no code, no paths or commands to spell out, no abbreviations or symbols ' +
         'a speech synthesizer would stumble on. Give the gist, and say clearly if the user has to do something. ' +
         'Reply with the message only.\n<r>' + answer.slice(0, 6000) + '</r>',
     })
@@ -143,6 +152,11 @@ async function say($: EngineInterface, answer: string) {
       return
     }
   }
+  await talk($, spoken)
+}
+
+// Speaks one text aloud with IGOR's voice, showing the 'speaking' phase and honouring a tap that cuts it off.
+async function talk($: EngineInterface, spoken: string) {
   isSpeaking = true
   stopSpeaking = false
   await setPhase($, 'speaking')
@@ -153,6 +167,8 @@ async function say($: EngineInterface, answer: string) {
         ...envFileArgs(),
         '--engine', text('voiceEngine', 'machine'),
         '--machine-voice', text('machineVoice', 'en-us+klatt4'),
+        '--machine-rate', String(Number(options.machineRate ?? 155)),
+        '--machine-wordgap', String(Number(options.machineWordGap ?? 4)),
         '--language', text('language', 'en'),
         '--voice', text('voiceId'),
         '--style', text('voiceStyle', 'robot'),
@@ -173,7 +189,21 @@ async function say($: EngineInterface, answer: string) {
   }
 }
 
+// The phone: a bell now and then while Claude waits for you.
+function ring($: EngineInterface) {
+  if (options.ringSound !== true) return
+  void (async () => {
+    try {
+      const bell = $.process.spawn({
+        argv: [python(), `${root}/bin/ring.py`, '--times', '2', '--device', text('speakerDevice', 'default')],
+      })
+      for await (const _piece of bell) { /* plays to the end */ }
+    } catch { /* a missing bell is not worth an error */ }
+  })()
+}
+
 const LABEL: Record<Phase, string> = {
+  waiting: 'your turn, tap Right Ctrl to answer',
   idle: 'tap Right Ctrl to talk',
   listening: 'listening, tap Right Ctrl to send',
   translating: 'translating, tap Right Ctrl to send',
@@ -181,8 +211,11 @@ const LABEL: Record<Phase, string> = {
   speaking: 'speaking, tap Right Ctrl to interrupt',
   muted: 'muted (/igor mute)',
 }
-const COLOR: Record<Phase, string> = { idle: 'gray', listening: 'green', translating: 'yellow', thinking: 'magenta', speaking: 'cyan', muted: 'gray' }
+const COLOR: Record<Phase, string> = { waiting: 'yellow', idle: 'gray', listening: 'green', translating: 'yellow', thinking: 'magenta', speaking: 'cyan', muted: 'gray' }
 const BARS = '▁▂▃▄▅▆▇█'
+// A telephone that rings: the handset rocks and the sound waves come and go.
+const PHONE = ['  ☎  ', ' ((☎)) ', '(((☎)))', ' ((☎)) ']
+const phone = (tick: number) => PHONE[tick % PHONE.length]!
 
 // A little level meter that moves while IGOR listens or speaks.
 const meter = (tick: number, width = 12) =>
@@ -196,10 +229,20 @@ export const register: Register = (on, config) => {
     if (isVoiceTurn && !e.agentId) {
       isVoiceTurn = false
       const willSpeak = options.speakReplies !== false && !isMuted && e.reason === 'answer' && e.answer.trim() !== ''
-      if (willSpeak) void say($, e.answer).catch(error => { $.ui.toast(`IGOR: ${message(error)}`); void setPhase($, rest()) })
-      else await setPhase($, rest())
+      if (willSpeak) {
+        void say($, e.answer)
+          .catch(error => $.ui.toast(`IGOR: ${message(error)}`))
+          .finally(() => { void waitForYou($, e.reason === 'answer') })
+        return done
+      }
     }
+    if (!e.agentId) await waitForYou($, e.reason === 'answer')
     return done
+  })
+
+  on('prompt.submit', async ($, e, next) => {
+    if (!listening) await setPhase($, 'thinking')
+    return next(e)
   })
 
   on('session.start', async ($, e, next) => {
@@ -209,9 +252,12 @@ export const register: Register = (on, config) => {
       description: 'IGOR voice: /igor (dictate into the prompt), /igor go (dictate and send), /igor stop, /igor mute. Hotkey: Right Ctrl.',
     })
 
+    if (options.phrases !== false && text('voiceEngine', 'machine') === 'machine') {
+      void talk($, 'Igor online. I am ready, when you are.').catch(() => undefined)
+    }
     ticker?.cancel()
     ticker = $.clock.every(300, () => {
-      if (currentPhase !== 'idle' && currentPhase !== 'muted') void update($, frame, n => (n ?? 0) + 1)
+      if (currentPhase !== 'idle' && currentPhase !== 'muted') void update($, frame, n => (n ?? 0) + 1) // the band animates
     })
 
     // The hotkey: tap = dictate / send, with the chord key held = translate.
@@ -272,7 +318,7 @@ export const register: Register = (on, config) => {
     return (
       <Box>
         <Text bold inverse color={color}> IGOR </Text>
-        <Text color={color}> {live ? meter(tick) : now === 'thinking' ? dots.padEnd(3) : '·'} </Text>
+        <Text color={color}> {live ? meter(tick) : now === 'thinking' ? dots.padEnd(3) : now === 'waiting' ? phone(tick) : '·'} </Text>
         <Text dimColor>{LABEL[now]}</Text>
       </Box>
     )

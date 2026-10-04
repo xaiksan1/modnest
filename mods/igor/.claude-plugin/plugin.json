@@ -100,6 +100,18 @@
       "description": "eSpeak NG voice name, language and variant (en-us+klatt4, fr+klatt, en+m3...). Replies are condensed and translated into this voice's language before being spoken.",
       "default": "en-us+klatt4"
     },
+    "machineRate": {
+      "type": "number",
+      "title": "Machine voice rhythm: words per minute",
+      "description": "eSpeak words per minute at speed 1.0. Lower is slower and more deliberate.",
+      "default": 155
+    },
+    "machineWordGap": {
+      "type": "number",
+      "title": "Machine voice rhythm: pause between words",
+      "description": "Extra silence between words, in tens of milliseconds (0 = none).",
+      "default": 4
+    },
     "voiceStyle": {
       "type": "string",
       "title": "IGOR's voice",
@@ -121,6 +133,18 @@
       "type": "boolean",
       "title": "Show IGOR above the prompt",
       "description": "A one-line band showing what IGOR is doing.",
+      "default": true
+    },
+    "ringSound": {
+      "type": "boolean",
+      "title": "Ring when it is your turn",
+      "description": "Play an old telephone bell when Claude has finished and is waiting for you (the band always shows a ringing phone).",
+      "default": false
+    },
+    "phrases": {
+      "type": "boolean",
+      "title": "IGOR's own lines",
+      "description": "Short spoken lines of IGOR's: a greeting at the start, a line when it did not hear you.",
       "default": true
     }
   }

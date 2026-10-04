@@ -19,6 +19,10 @@
           "text": "A one-line IGOR band above the prompt shows what it is doing: waiting, listening (with a moving level meter), thinking or speaking."
         },
         {
+          "keys": [],
+          "text": "When Claude has finished and is waiting for you, a telephone rings in the band (and, if you turn it on, an old-fashioned bell rings). IGOR also has a few lines of its own: a greeting at the start and a line when it did not hear you."
+        },
+        {
           "keys": [
             "Right Ctrl"
           ],
@@ -116,6 +120,21 @@
           "voiceStyle",
           "robot",
           "IGOR's voice: robot (buzzing 90s computer), soft (grit only) or plain (no effect)"
+        ],
+        [
+          "machineRate / machineWordGap",
+          "155 / 4",
+          "Rhythm of the machine voice: words per minute and the pause between words"
+        ],
+        [
+          "ringSound",
+          "false",
+          "Play a telephone bell when it is your turn"
+        ],
+        [
+          "phrases",
+          "true",
+          "IGOR's own spoken lines"
         ],
         [
           "voiceSpeed",
