@@ -8,19 +8,19 @@
   },
   "mods": [
     {
-      "id": "igor",
-      "title": "IGOR",
+      "id": "mya",
+      "title": "MYA",
       "version": "0.3.0",
       "tagline": "Tap a key to talk to Claude Code, and hear it answer.",
-      "summary": "Hands-free voice for the terminal: dictate, translate in one key, hear IGOR read Claude's answers aloud, and see a phone ring in a live band above your prompt when it is your turn.",
+      "summary": "Hands-free voice for the terminal: dictate, translate in one key, hear MYA read Claude's answers aloud, and see a phone ring in a live band above your prompt when it is your turn.",
       "does": [
         {
           "keys": [],
-          "text": "A one-line IGOR band above the prompt shows what it is doing: waiting, listening (with a moving level meter), thinking or speaking."
+          "text": "A one-line MYA band above the prompt shows what it is doing: waiting, listening (with a moving level meter), thinking or speaking."
         },
         {
           "keys": [],
-          "text": "When Claude has finished and is waiting for you, a telephone rings in the band (and, if you turn it on, an old-fashioned bell rings). IGOR also has a few lines of its own: a greeting at the start and a line when it did not hear you."
+          "text": "When Claude has finished and is waiting for you, a telephone rings in the band (and, if you turn it on, an old-fashioned bell rings). MYA also has a few lines of its own: a greeting at the start and a line when it did not hear you."
         },
         {
           "keys": [
@@ -37,7 +37,7 @@
         },
         {
           "keys": [],
-          "text": "When you asked by voice, IGOR reads Claude's answer aloud with a human-like Cartesia voice. Long answers are first condensed into a few spoken sentences; code and paths are not read out. Prefer something else? An ffmpeg robot effect, or a local machine voice (eSpeak NG, no key, no network), are one option away."
+          "text": "When you asked by voice, MYA reads Claude's answer aloud with a human-like Cartesia voice. Long answers are first condensed into a few spoken sentences; code and paths are not read out. Prefer something else? An ffmpeg robot effect, or a local machine voice (eSpeak NG, no key, no network), are one option away."
         },
         {
           "keys": [
@@ -48,20 +48,20 @@
       ],
       "commands": [
         {
-          "name": "/igor",
+          "name": "/mya",
           "text": "Fill the prompt with the dictation instead of sending it."
         },
         {
-          "name": "/igor go",
+          "name": "/mya go",
           "text": "Dictate and send."
         },
         {
-          "name": "/igor stop",
+          "name": "/mya stop",
           "text": "End a recording."
         },
         {
-          "name": "/igor mute",
-          "text": "Toggle IGOR's voice."
+          "name": "/mya mute",
+          "text": "Toggle MYA's voice."
         }
       ],
       "requirements": [
@@ -77,11 +77,11 @@
         },
         {
           "label": "Load the mod",
-          "command": "claude --plugin-dir modnest/mods/igor"
+          "command": "claude --plugin-dir modnest/mods/mya"
         },
         {
           "label": "Check it",
-          "command": "claude plugin validate modnest/mods/igor"
+          "command": "claude plugin validate modnest/mods/mya"
         }
       ],
       "installNote": "Then set your keys in the plugin's options (/config, kept in secure storage) or in your shell environment as DEEPGRAM_API_KEY and CARTESIA_API_KEY. Never put keys in a file you commit.",
@@ -93,7 +93,7 @@
         ],
         [
           "keyterms",
-          "Igor",
+          "Mya",
           "Names Deepgram should favour; common mishearings (like \"I car\") are corrected"
         ],
         [
@@ -134,7 +134,7 @@
         [
           "phrases",
           "true",
-          "IGOR's own spoken lines"
+          "MYA's own spoken lines"
         ],
         [
           "voiceSpeed",
@@ -144,12 +144,12 @@
         [
           "voiceId",
           "(empty)",
-          "Cartesia voice id; empty uses IGOR's original voice (Katie)"
+          "Cartesia voice id; empty uses MYA's original voice (Katie)"
         ],
         [
           "showBand",
           "true",
-          "Show the IGOR band above the prompt"
+          "Show the MYA band above the prompt"
         ],
         [
           "micDevice",

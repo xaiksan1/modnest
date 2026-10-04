@@ -5,8 +5,8 @@ import type { Phase } from '../types'
 
 type Mode = 'dictate' | 'translate'
 
-const phase = atom({ plugin: 'igor', key: 'phase' } as const, 'idle' as Phase)
-const frame = atom({ plugin: 'igor', key: 'frame' } as const, 0)
+const phase = atom({ plugin: 'mya', key: 'phase' } as const, 'idle' as Phase)
+const frame = atom({ plugin: 'mya', key: 'frame' } as const, 0)
 
 let options: PluginOptions = {}
 let listening: Mode | undefined
@@ -17,7 +17,7 @@ let isVoiceTurn = false
 let isMuted = false
 let currentPhase: Phase = 'idle'
 let ticker: { cancel: () => void } | undefined
-const stopFile = `/tmp/igor-${Math.random().toString(36).slice(2)}.stop` // one per session
+const stopFile = `/tmp/mya-${Math.random().toString(36).slice(2)}.stop` // one per session
 
 const text = (key: string, fallback = '') => String(options[key] ?? fallback)
 const python = () => text('python', 'python3')
@@ -45,14 +45,14 @@ async function setPhase($: EngineInterface, next: Phase) {
 
 // One tap on the key: start listening, or, if already listening, finish (the text is then sent).
 async function pressed($: EngineInterface, mode: Mode) {
-  if (isSpeaking) stopSpeaking = true // a tap cuts IGOR's voice, then we listen
+  if (isSpeaking) stopSpeaking = true // a tap cuts MYA's voice, then we listen
   try {
     if (listening) await $.fs.write(stopFile, 'stop')
     else await listen($, mode, 'submit', 'hotkey')
   } catch (error) {
     listening = undefined
     await setPhase($, rest())
-    $.ui.toast(`IGOR: ${message(error)}`)
+    $.ui.toast(`MYA: ${message(error)}`)
   }
 }
 
@@ -69,7 +69,7 @@ async function listen($: EngineInterface, mode: Mode, then: 'submit' | 'fill', h
         '--stop-file', stopFile,
         ...envFileArgs(),
         '--language', text('language', 'en'),
-        '--keyterms', text('keyterms', 'Igor'),
+        '--keyterms', text('keyterms', 'Mya'),
         '--device', text('micDevice', 'auto'),
         ...manualStop,
       ],
@@ -90,7 +90,7 @@ async function listen($: EngineInterface, mode: Mode, then: 'submit' | 'fill', h
   }
   if (!heard) {
     await setPhase($, rest())
-    $.ui.toast(`IGOR: ${problem || 'nothing received'}`)
+    $.ui.toast(`MYA: ${problem || 'nothing received'}`)
     if (options.phrases !== false && text('voiceEngine', 'cartesia') === 'machine') void talk($, 'I did not hear you. Please, repeat.').catch(() => undefined)
     return
   }
@@ -105,7 +105,7 @@ async function listen($: EngineInterface, mode: Mode, then: 'submit' | 'fill', h
     })
     if (!done.isAnswered) {
       await setPhase($, rest())
-      $.ui.toast(`IGOR: translation failed (${done.reason})`)
+      $.ui.toast(`MYA: translation failed (${done.reason})`)
       await $.prompt.fill({ text: heard, mode: 'append' }) // keep what was said
       return
     }
@@ -129,7 +129,7 @@ const machineLanguage = () => {
   return LANGUAGES[code] ?? code
 }
 
-// IGOR reads Claude's reply aloud. A machine voice speaks one language, so the reply is first turned into a short
+// MYA reads Claude's reply aloud. A machine voice speaks one language, so the reply is first turned into a short
 // spoken message in that language; a human-like voice only condenses a long reply.
 async function say($: EngineInterface, answer: string) {
   const isMachine = text('voiceEngine', 'cartesia') === 'machine'
@@ -148,14 +148,14 @@ async function say($: EngineInterface, answer: string) {
     })
     if (short.isAnswered) spoken = short.text
     else if (isMachine) {
-      $.ui.toast('IGOR: could not prepare the spoken message')
+      $.ui.toast('MYA: could not prepare the spoken message')
       return
     }
   }
   await talk($, spoken)
 }
 
-// Speaks one text aloud with IGOR's voice, showing the 'speaking' phase and honouring a tap that cuts it off.
+// Speaks one text aloud with MYA's voice, showing the 'speaking' phase and honouring a tap that cuts it off.
 async function talk($: EngineInterface, spoken: string) {
   isSpeaking = true
   stopSpeaking = false
@@ -180,7 +180,7 @@ async function talk($: EngineInterface, spoken: string) {
     })
     for await (const piece of voice) {
       if (stopSpeaking) break // leaving the loop stops playback
-      if (piece.stream === 'stdout' && piece.text.startsWith('ERR')) $.ui.toast(`IGOR: ${piece.text.split('\t')[1] ?? ''}`)
+      if (piece.stream === 'stdout' && piece.text.startsWith('ERR')) $.ui.toast(`MYA: ${piece.text.split('\t')[1] ?? ''}`)
     }
   } finally {
     isSpeaking = false
@@ -209,7 +209,7 @@ const LABEL: Record<Phase, string> = {
   translating: 'translating, tap Right Ctrl to send',
   thinking: 'thinking',
   speaking: 'speaking, tap Right Ctrl to interrupt',
-  muted: 'muted (/igor mute)',
+  muted: 'muted (/mya mute)',
 }
 const COLOR: Record<Phase, string> = { waiting: 'yellow', idle: 'gray', listening: 'green', translating: 'yellow', thinking: 'magenta', speaking: 'cyan', muted: 'gray' }
 const BARS = '▁▂▃▄▅▆▇█'
@@ -217,7 +217,7 @@ const BARS = '▁▂▃▄▅▆▇█'
 const PHONE = ['  ☎  ', ' ((☎)) ', '(((☎)))', ' ((☎)) ']
 const phone = (tick: number) => PHONE[tick % PHONE.length]!
 
-// A little level meter that moves while IGOR listens or speaks.
+// A little level meter that moves while MYA listens or speaks.
 const meter = (tick: number, width = 12) =>
   Array.from({ length: width }, (_, i) => BARS[Math.min(7, Math.floor(Math.abs(Math.sin(tick * 0.9 + i * 1.7)) * 8))]).join('')
 
@@ -231,7 +231,7 @@ export const register: Register = (on, config) => {
       const willSpeak = options.speakReplies !== false && !isMuted && e.reason === 'answer' && e.answer.trim() !== ''
       if (willSpeak) {
         void say($, e.answer)
-          .catch(error => $.ui.toast(`IGOR: ${message(error)}`))
+          .catch(error => $.ui.toast(`MYA: ${message(error)}`))
           .finally(() => { void waitForYou($, e.reason === 'answer') })
         return done
       }
@@ -248,12 +248,12 @@ export const register: Register = (on, config) => {
   on('session.start', async ($, e, next) => {
     root = $.plugin.root
     await $.command.register({
-      name: 'igor',
-      description: 'IGOR voice: /igor (dictate into the prompt), /igor go (dictate and send), /igor stop, /igor mute. Hotkey: Right Ctrl.',
+      name: 'mya',
+      description: 'MYA voice: /mya (dictate into the prompt), /mya go (dictate and send), /mya stop, /mya mute. Hotkey: Right Ctrl.',
     })
 
     if (options.phrases !== false && text('voiceEngine', 'cartesia') === 'machine') {
-      void talk($, 'Igor online. I am ready, when you are.').catch(() => undefined)
+      void talk($, 'Mya online. I am ready, when you are.').catch(() => undefined)
     }
     ticker?.cancel()
     ticker = $.clock.every(300, () => {
@@ -272,38 +272,38 @@ export const register: Register = (on, config) => {
             const [word, ...parts] = line.trim().split('\t')
             if (word === 'TOGGLE') void pressed($, 'dictate')
             else if (word === 'TRANSLATE') void pressed($, 'translate')
-            else if (word === 'ERR') $.ui.toast(`IGOR: hotkey ${parts.join(' ')}`)
+            else if (word === 'ERR') $.ui.toast(`MYA: hotkey ${parts.join(' ')}`)
           }
         }
       } catch {
-        $.ui.toast('IGOR: the hotkey is unavailable')
+        $.ui.toast('MYA: the hotkey is unavailable')
       }
     })()
 
     return next(e)
   })
 
-  on('command.run', { command: 'igor' }, async ($, e) => {
+  on('command.run', { command: 'mya' }, async ($, e) => {
     const arg = e.args.trim().toLowerCase()
     if (arg === 'stop') {
-      if (!listening) return { text: 'IGOR is not listening.' }
+      if (!listening) return { text: 'MYA is not listening.' }
       await $.fs.write(stopFile, 'stop')
-      return { text: 'IGOR: finishing…' }
+      return { text: 'MYA: finishing…' }
     }
     if (arg === 'mute') {
       isMuted = !isMuted
       if (isMuted) stopSpeaking = true
       if (currentPhase === 'idle' || currentPhase === 'muted') await setPhase($, rest())
-      return { text: isMuted ? 'IGOR will stay quiet.' : 'IGOR will speak again.' }
+      return { text: isMuted ? 'MYA will stay quiet.' : 'MYA will speak again.' }
     }
-    if (arg !== '' && arg !== 'go') return { text: 'Usage: /igor, /igor go, /igor stop or /igor mute.' }
-    if (listening) return { text: 'IGOR is already listening: speak, or /igor stop.' }
+    if (arg !== '' && arg !== 'go') return { text: 'Usage: /mya, /mya go, /mya stop or /mya mute.' }
+    if (listening) return { text: 'MYA is already listening: speak, or /mya stop.' }
     void listen($, 'dictate', arg === 'go' ? 'submit' : 'fill', 'command').catch(async error => {
       listening = undefined
       await setPhase($, rest())
-      $.ui.toast(`IGOR: ${message(error)}`)
+      $.ui.toast(`MYA: ${message(error)}`)
     })
-    return { text: 'IGOR is listening…' }
+    return { text: 'MYA is listening…' }
   })
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
@@ -317,7 +317,7 @@ export const register: Register = (on, config) => {
 
     return (
       <Box>
-        <Text bold inverse color={color}> IGOR </Text>
+        <Text bold inverse color={color}> MYA </Text>
         <Text color={color}> {live ? meter(tick) : now === 'thinking' ? dots.padEnd(3) : now === 'waiting' ? phone(tick) : '·'} </Text>
         <Text dimColor>{LABEL[now]}</Text>
       </Box>

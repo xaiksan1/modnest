@@ -102,7 +102,7 @@ def record(device: str, stop_file: str, max_s: float, wait_s: float, silence_s: 
 
 
 # Words Deepgram tends to mishear, put right after transcription (only for the matching key term).
-MISHEARD = {"igor": ["i car", "icar", "i-car", "ygor", "i gor", "igore"]}
+MISHEARD = {"mya": ["mia", "miya", "mi a"]}
 
 
 def fix_terms(text: str, terms: list[str]) -> str:

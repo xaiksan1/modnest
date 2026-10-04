@@ -1,4 +1,4 @@
-"""speak.py — IGOR's voice: by default Cartesia text-to-speech -> aplay (optionally an ffmpeg robot effect, or a local eSpeak NG machine voice).
+"""speak.py — MYA's voice: by default Cartesia text-to-speech -> aplay (optionally an ffmpeg robot effect, or a local eSpeak NG machine voice).
 
 The text arrives on standard input. Markdown, code and URLs are stripped before
 speaking. The key is read from CARTESIA_API_KEY (or an optional --env file) and
@@ -15,10 +15,10 @@ import urllib.error
 import urllib.request
 import wave
 
-VOICE = "f786b574-daa5-4673-aa0c-cbe3e8534c02"     # Cartesia "Katie", IGOR's original voice (used when --voice is not given)
+VOICE = "f786b574-daa5-4673-aa0c-cbe3e8534c02"     # Cartesia "Katie", MYA's original voice (used when --voice is not given)
 MODEL, VERSION = "sonic-3", "2025-04-16"
 
-# IGOR's voice: ffmpeg effects over the synthesized speech.
+# MYA's voice: ffmpeg effects over the synthesized speech.
 # robot = phase zeroed in the spectrum (a constant ~125 Hz buzz, the classic 1990s computer voice) + digital grit + metallic echo.
 # soft  = no buzz, just grit and echo.
 STYLES = {
@@ -64,7 +64,7 @@ def speakable(text: str) -> str:
 
 
 def speak_machine(text: str, a) -> None:
-    """IGOR's real machine voice: a formant synthesizer, rendered locally, no network and no key."""
+    """MYA's real machine voice: a formant synthesizer, rendered locally, no network and no key."""
     try:
         import espeak_say
         pcm, rate = espeak_say.synth(text, a.machine_voice, int(a.machine_rate * min(2.0, max(0.5, a.speed))), 35, 15, a.machine_wordgap)
@@ -125,7 +125,7 @@ def main() -> None:
     try:
         chain = build_filter(a.style, a.speed)
         if chain:
-            played = f.name + ".igor.wav"
+            played = f.name + ".mya.wav"
             paths.append(played)
             try:
                 done = subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", f.name, "-af", chain, "-ar", "24000", played],

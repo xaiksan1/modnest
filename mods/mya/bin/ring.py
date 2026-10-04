@@ -7,7 +7,7 @@ import os
 import subprocess
 import tempfile
 
-PATH = os.path.join(tempfile.gettempdir(), "igor-ring.wav")
+PATH = os.path.join(tempfile.gettempdir(), "mya-ring.wav")
 # Two bell tones, amplitude-modulated at 25 Hz (the clapper hitting the gongs), one burst of 1.1 s, then 1.4 s of silence.
 BELL = ("aevalsrc='(0.35*sin(2*PI*1400*t)+0.25*sin(2*PI*1750*t))*(0.5+0.5*sin(2*PI*25*t))*lt(mod(t,2.5),1.1)':d=2.5:s=22050")
 

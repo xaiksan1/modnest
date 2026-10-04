@@ -1,7 +1,7 @@
 {
-  "name": "igor",
+  "name": "mya",
   "version": "0.3.0",
-  "description": "IGOR: a voice for Claude Code on Linux/X11. Tap Right Ctrl to talk, Right Ctrl + Space to translate, and IGOR answers aloud, with a ringing phone when it is your turn.",
+  "description": "MYA: a voice for Claude Code on Linux/X11. Tap Right Ctrl to talk, Right Ctrl + Space to translate, and MYA answers aloud, with a ringing phone when it is your turn.",
   "types": "./types/index.d.ts",
   "userConfig": {
     "language": {
@@ -13,8 +13,8 @@
     "keyterms": {
       "type": "string",
       "title": "Words to recognise",
-      "description": "Comma-separated names or jargon Deepgram should favour. 'Igor' is the default so it is not heard as 'I car'.",
-      "default": "Igor"
+      "description": "Comma-separated names or jargon Deepgram should favour. 'Mya' is the default so it is not heard as 'I car'.",
+      "default": "Mya"
     },
     "translateTo": {
       "type": "string",
@@ -25,13 +25,13 @@
     "speakReplies": {
       "type": "boolean",
       "title": "Speak replies",
-      "description": "IGOR reads Claude's answer aloud when you sent the question by voice.",
+      "description": "MYA reads Claude's answer aloud when you sent the question by voice.",
       "default": true
     },
     "voiceId": {
       "type": "string",
       "title": "Cartesia voice id",
-      "description": "Cartesia voice id. Empty = IGOR's original voice (Katie).",
+      "description": "Cartesia voice id. Empty = MYA's original voice (Katie).",
       "default": ""
     },
     "micDevice": {
@@ -86,7 +86,7 @@
     },
     "voiceEngine": {
       "type": "string",
-      "title": "IGOR's engine",
+      "title": "MYA's engine",
       "description": "cartesia = a human-like cloud voice (default); machine = a formant synthesizer (eSpeak NG, local, no key; speaks one language, so replies are condensed and translated into it).",
       "default": "cartesia",
       "options": [
@@ -114,7 +114,7 @@
     },
     "voiceStyle": {
       "type": "string",
-      "title": "IGOR's voice",
+      "title": "MYA's voice",
       "description": "Cartesia engine only: plain (no effect), robot (buzzing 90s computer) or soft (grit only).",
       "default": "plain",
       "options": [
@@ -125,14 +125,14 @@
     },
     "voiceSpeed": {
       "type": "number",
-      "title": "IGOR's speaking speed",
+      "title": "MYA's speaking speed",
       "description": "0.5 (slow) to 2.0 (fast); 1.0 is the voice as synthesized. Lower it if a voice talks too fast.",
       "default": 1.0
     },
     "showBand": {
       "type": "boolean",
-      "title": "Show IGOR above the prompt",
-      "description": "A one-line band showing what IGOR is doing.",
+      "title": "Show MYA above the prompt",
+      "description": "A one-line band showing what MYA is doing.",
       "default": true
     },
     "ringSound": {
@@ -143,8 +143,8 @@
     },
     "phrases": {
       "type": "boolean",
-      "title": "IGOR's own lines",
-      "description": "Short spoken lines of IGOR's: a greeting at the start, a line when it did not hear you.",
+      "title": "MYA's own lines",
+      "description": "Short spoken lines of MYA's: a greeting at the start, a line when it did not hear you.",
       "default": true
     }
   }

@@ -2,6 +2,6 @@ export type Phase = 'idle' | 'listening' | 'translating' | 'thinking' | 'speakin
 
 declare module 'claude-code' {
   interface PluginState {
-    igor: { phase: Phase; frame: number }
+    mya: { phase: Phase; frame: number }
   }
 }

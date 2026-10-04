@@ -4,7 +4,7 @@ Small mods for [Claude Code](https://code.claude.com), and the static site that 
 
 | Mod | What it does |
 |---|---|
-| [igor](mods/igor/) | IGOR: a robot voice for Claude Code. Tap-to-talk dictation, one-key translation, spoken replies and a live band above the prompt (Linux/X11) |
+| [mya](mods/mya/) | MYA: a robot voice for Claude Code. Tap-to-talk dictation, one-key translation, spoken replies and a live band above the prompt (Linux/X11) |
 
 Load a mod with `claude --plugin-dir mods/<name>`. Each mod folder has its own README saying what it needs and what it sends where.
 

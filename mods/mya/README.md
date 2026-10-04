@@ -1,13 +1,13 @@
-# IGOR
+# MYA
 
 A voice for [Claude Code](https://code.claude.com), as a mod (a plugin of function hooks): talk to your terminal, hear it answer, and see a phone ring when it is your turn.
 
 - **Tap Right Ctrl** → speak → **tap again**: your words are transcribed and sent to Claude.
 - **Right Ctrl + Space** → speak → tap: your words are transcribed, **translated** (default: into English) and sent.
-- A one-line **IGOR band** above the prompt shows what it is doing: listening (with a moving level meter), thinking, speaking, and, when Claude has finished and waits for you, a **ringing telephone** (with an optional old-fashioned bell: `ringSound`).
-- IGOR has a few lines of its own: a greeting when the session starts and a line when it did not hear you (`phrases`).
-- When you sent the question by voice, **IGOR reads Claude's answer aloud** with a human-like Cartesia voice (Katie by default). Long answers are first condensed into a few spoken sentences; code and paths are not read out. Two options for other tastes: an ffmpeg robot effect (`voiceStyle: robot`) or a local formant synthesizer with no key and no network (`voiceEngine: machine`, eSpeak NG).
-- `/igor` fills the prompt instead of sending (`/igor go` sends, `/igor stop` ends a recording, `/igor mute` toggles speech).
+- A one-line **MYA band** above the prompt shows what it is doing: listening (with a moving level meter), thinking, speaking, and, when Claude has finished and waits for you, a **ringing telephone** (with an optional old-fashioned bell: `ringSound`).
+- MYA has a few lines of its own: a greeting when the session starts and a line when it did not hear you (`phrases`).
+- When you sent the question by voice, **MYA reads Claude's answer aloud** with a human-like Cartesia voice (Katie by default). Long answers are first condensed into a few spoken sentences; code and paths are not read out. Two options for other tastes: an ffmpeg robot effect (`voiceStyle: robot`) or a local formant synthesizer with no key and no network (`voiceEngine: machine`, eSpeak NG).
+- `/mya` fills the prompt instead of sending (`/mya go` sends, `/mya stop` ends a recording, `/mya mute` toggles speech).
 
 ## Requirements
 
@@ -18,7 +18,7 @@ A voice for [Claude Code](https://code.claude.com), as a mod (a plugin of functi
 ## Install
 
 ```bash
-claude --plugin-dir mods/igor
+claude --plugin-dir mods/mya
 ```
 
 Then set your keys, either in the plugin's options (`/config`, stored in secure storage) or in your shell environment (`DEEPGRAM_API_KEY`, `CARTESIA_API_KEY`). **Never put keys in a file you commit.** Set `language` to what you speak (`en`, `fr`, `es`, `de`...) and `translateTo` to the language you want for Right Ctrl + Space.
@@ -28,7 +28,7 @@ Then set your keys, either in the plugin's options (`/config`, stored in secure 
 | Option | Default | Meaning |
 |---|---|---|
 | `language` | `en` | Deepgram language code of what you say; also the speech language of replies |
-| `keyterms` | `Igor` | Comma-separated names Deepgram should favour (and that common mishearings are corrected to) |
+| `keyterms` | `Mya` | Comma-separated names Deepgram should favour (and that common mishearings are corrected to) |
 | `translateTo` | `English` | Target language of the translate chord |
 | `speakReplies` | `true` | Read answers aloud when the question was voiced |
 | `voiceEngine` | `cartesia` | `cartesia` (human-like cloud voice) or `machine` (eSpeak NG, local) |
@@ -36,10 +36,10 @@ Then set your keys, either in the plugin's options (`/config`, stored in secure 
 | `voiceStyle` | `plain` | Cartesia only: `plain`, `robot` (buzzing 90s computer) or `soft` (grit only) |
 | `machineRate` / `machineWordGap` | `155` / `4` | Rhythm of the machine voice: words per minute and the pause between words |
 | `ringSound` | `false` | Play a telephone bell when it is your turn |
-| `phrases` | `true` | IGOR's own spoken lines |
+| `phrases` | `true` | MYA's own spoken lines |
 | `voiceSpeed` | `1.0` | Speaking speed from 0.5 (slow) to 2.0 (fast); lower it if a voice talks too fast |
-| `voiceId` | _(empty)_ | Cartesia voice id; empty = IGOR's original voice (Katie) |
-| `showBand` | `true` | Show the IGOR band above the prompt |
+| `voiceId` | _(empty)_ | Cartesia voice id; empty = MYA's original voice (Katie) |
+| `showBand` | `true` | Show the MYA band above the prompt |
 | `micDevice` | `auto` | ALSA capture device (`auto` prefers a USB microphone; see `arecord -l`) |
 | `speakerDevice` | `default` | ALSA playback device |
 | `python` | `python3` | Python 3 command for the helpers |
@@ -61,6 +61,6 @@ Then set your keys, either in the plugin's options (`/config`, stored in secure 
 ## Tests
 
 ```bash
-claude plugin validate mods/igor
-claude plugin test mods/igor
+claude plugin validate mods/mya
+claude plugin test mods/mya
 ```
