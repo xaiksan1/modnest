@@ -27,6 +27,17 @@ STYLES = {
 }
 
 
+def build_filter(style: str, speed: float) -> str:
+    """ffmpeg filter chain: slow down or speed up first (pitch unchanged), then the style, so the robot buzz keeps its pitch."""
+    speed = min(2.0, max(0.5, speed))
+    parts = []
+    if abs(speed - 1.0) > 0.01:
+        parts.append(f"atempo={speed:.3f}")
+    if style in STYLES:
+        parts.append(STYLES[style])
+    return ",".join(parts)
+
+
 def load_key(env_path: str) -> str:
     key = os.environ.get("CARTESIA_API_KEY", "").strip()
     if key:
@@ -56,6 +67,7 @@ def main() -> None:
     ap.add_argument("--env", default="")
     ap.add_argument("--voice", default="")
     ap.add_argument("--style", default="robot", choices=["robot", "soft", "plain"])
+    ap.add_argument("--speed", type=float, default=0.9, help="speaking speed, 0.5 (slow) to 2.0 (fast); 1.0 = as synthesized")
     ap.add_argument("--language", default="fr")
     ap.add_argument("--device", default="default")
     a = ap.parse_args()
@@ -87,11 +99,12 @@ def main() -> None:
     played = f.name
     paths = [f.name]
     try:
-        if a.style != "plain":
+        chain = build_filter(a.style, a.speed)
+        if chain:
             played = f.name + ".igor.wav"
             paths.append(played)
             try:
-                done = subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", f.name, "-af", STYLES[a.style], "-ar", "24000", played],
+                done = subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", f.name, "-af", chain, "-ar", "24000", played],
                                       capture_output=True, timeout=30)
                 if done.returncode != 0:
                     played = f.name

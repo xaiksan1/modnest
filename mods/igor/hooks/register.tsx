@@ -138,6 +138,7 @@ async function say($: EngineInterface, answer: string) {
         '--language', text('language', 'en'),
         '--voice', text('voiceId'),
         '--style', text('voiceStyle', 'robot'),
+        '--speed', String(Number(options.voiceSpeed ?? 0.9)),
         '--device', text('speakerDevice', 'default'),
       ],
       env: keysEnv(),

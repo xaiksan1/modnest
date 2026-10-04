@@ -31,6 +31,7 @@ Then set your keys, either in the plugin's options (`/config`, stored in secure 
 | `translateTo` | `English` | Target language of the translate chord |
 | `speakReplies` | `true` | Read answers aloud when the question was voiced |
 | `voiceStyle` | `robot` | `robot` (buzzing 90s computer), `soft` (grit only) or `plain` (no effect) |
+| `voiceSpeed` | `0.9` | Speaking speed from 0.5 (slow) to 2.0 (fast); some voices talk fast |
 | `voiceId` | _(empty)_ | Cartesia voice id; empty = Henry, a flat male voice |
 | `showBand` | `true` | Show the IGOR band above the prompt |
 | `micDevice` | `auto` | ALSA capture device (`auto` prefers a USB microphone; see `arecord -l`) |

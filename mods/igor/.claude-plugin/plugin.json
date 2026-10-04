@@ -95,6 +95,12 @@
         "plain"
       ]
     },
+    "voiceSpeed": {
+      "type": "number",
+      "title": "IGOR's speaking speed",
+      "description": "0.5 (slow) to 2.0 (fast); 1.0 is the voice as synthesized. Some voices talk fast: lower it if you cannot follow.",
+      "default": 0.9
+    },
     "showBand": {
       "type": "boolean",
       "title": "Show IGOR above the prompt",

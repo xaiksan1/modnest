@@ -108,6 +108,11 @@
           "IGOR's voice: robot (buzzing 90s computer), soft (grit only) or plain (no effect)"
         ],
         [
+          "voiceSpeed",
+          "0.9",
+          "Speaking speed from 0.5 (slow) to 2.0 (fast); some voices talk fast"
+        ],
+        [
           "voiceId",
           "(empty)",
           "Cartesia voice id; empty uses Henry, a flat male voice that suits the robot effect"
