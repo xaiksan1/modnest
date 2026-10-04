@@ -1,4 +1,4 @@
-"""speak.py — IGOR's voice: Cartesia text-to-speech -> ffmpeg robot effect -> aplay.
+"""speak.py — IGOR's voice: by default a local formant synthesizer (eSpeak NG); optionally Cartesia text-to-speech -> ffmpeg robot effect -> aplay.
 
 The text arrives on standard input. Markdown, code and URLs are stripped before
 speaking. The key is read from CARTESIA_API_KEY (or an optional --env file) and
@@ -13,6 +13,7 @@ import sys
 import tempfile
 import urllib.error
 import urllib.request
+import wave
 
 VOICE = "87286a8d-7ea7-4235-a41a-dd9fa6630feb"     # Cartesia "Henry", a flat male voice: the base of IGOR (used when --voice is not given)
 MODEL, VERSION = "sonic-3", "2025-04-16"
@@ -62,10 +63,29 @@ def speakable(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+def speak_machine(text: str, a) -> None:
+    """IGOR's real machine voice: a formant synthesizer, rendered locally, no network and no key."""
+    try:
+        import espeak_say
+        pcm, rate = espeak_say.synth(text, a.machine_voice, int(155 * min(2.0, max(0.5, a.speed))), 35, 15, 2)
+    except Exception as e:
+        print(f"ERR\teSpeak NG failed ({e.__class__.__name__}: {e})", flush=True)
+        return
+    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+        with wave.open(f, "wb") as w:
+            w.setnchannels(1), w.setsampwidth(2), w.setframerate(rate), w.writeframes(pcm)
+    try:
+        subprocess.run(["aplay", "-q", "-D", a.device, f.name], check=False)
+    finally:
+        os.unlink(f.name)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--env", default="")
     ap.add_argument("--voice", default="")
+    ap.add_argument("--engine", default="machine", choices=["machine", "cartesia"], help="machine = eSpeak NG formant synthesizer (local), cartesia = human-like cloud voice")
+    ap.add_argument("--machine-voice", default="en-us+klatt4")
     ap.add_argument("--style", default="robot", choices=["robot", "soft", "plain"])
     ap.add_argument("--speed", type=float, default=0.9, help="speaking speed, 0.5 (slow) to 2.0 (fast); 1.0 = as synthesized")
     ap.add_argument("--language", default="fr")
@@ -74,6 +94,8 @@ def main() -> None:
     text = speakable(sys.stdin.read())[:1500]
     if not text:
         return
+    if a.engine == "machine":
+        return speak_machine(text, a)
     key = load_key(a.env)
     if not key:
         print("ERR\tCartesia API key not found", flush=True)

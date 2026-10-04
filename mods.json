@@ -11,8 +11,8 @@
       "id": "igor",
       "title": "IGOR",
       "version": "0.3.0",
-      "tagline": "A robot voice for Claude Code: tap a key, talk, and IGOR answers.",
-      "summary": "Hands-free voice for the terminal, with a 1990s computer for a voice: dictate, translate in one key, and hear IGOR read Claude's answers aloud, with a live band above your prompt.",
+      "tagline": "A machine voice for Claude Code: tap a key, talk, and IGOR answers.",
+      "summary": "Hands-free voice for the terminal, with a real 1990s-style machine voice: dictate, translate in one key, and hear IGOR read Claude's answers aloud, with a live band above your prompt.",
       "does": [
         {
           "keys": [],
@@ -33,7 +33,7 @@
         },
         {
           "keys": [],
-          "text": "When you asked by voice, IGOR reads Claude's answer aloud in a buzzing robot voice (a flat male voice run through an ffmpeg effect). Long answers are first condensed into a few spoken sentences; code and paths are not read out."
+          "text": "When you asked by voice, IGOR reads Claude's answer aloud with a real machine voice: eSpeak NG, a formant synthesizer in the spirit of 1990s computers, rendered locally. It speaks one language (English by default), so the reply is first turned into a short spoken message in that language; code and paths are not read out."
         },
         {
           "keys": [
@@ -62,9 +62,9 @@
       ],
       "requirements": [
         "Linux with an X11 session (not Wayland, macOS or Windows: the hotkey is read with xinput)",
-        "arecord and aplay (alsa-utils), xinput, ffmpeg (for the robot voice) and Python 3. The helpers use the standard library only: nothing to pip install",
+        "arecord and aplay (alsa-utils), xinput, libespeak-ng (the machine voice; it ships with speech-dispatcher) and Python 3. ffmpeg only for the optional Cartesia robot effect. The helpers use the standard library only: nothing to pip install",
         "A Deepgram API key for speech-to-text",
-        "Optional: a Cartesia API key to hear replies"
+        "Optional: a Cartesia API key, only for the cloud voice"
       ],
       "install": [
         {
@@ -101,6 +101,16 @@
           "speakReplies",
           "true",
           "Read answers aloud when the question was voiced"
+        ],
+        [
+          "voiceEngine",
+          "machine",
+          "machine (eSpeak NG, local) or cartesia (human-like cloud voice)"
+        ],
+        [
+          "machineVoice",
+          "en-us+klatt4",
+          "eSpeak NG voice and variant (fr+klatt, en+m3...); replies are turned into this voice's language before speaking"
         ],
         [
           "voiceStyle",
@@ -145,8 +155,8 @@
       ],
       "privacy": [
         "Your microphone audio goes to Deepgram while you record.",
-        "The text of Claude's answer, or its condensed version, goes to Cartesia when replies are spoken.",
-        "Translating and condensing use a small haiku call through your own Claude Code session. The robot effect runs locally with ffmpeg.",
+        "With the default machine voice nothing is sent for speech. With the cartesia engine, the text of Claude's answer, or its condensed version, goes to Cartesia.",
+        "Translating and condensing use a small haiku call through your own Claude Code session.",
         "The hotkey helper reads every X11 key event with xinput and keeps only Right Ctrl and the chord key; every other key is dropped on the spot, nothing is stored or written. It is about sixty lines: read bin/hotkey.py before enabling it."
       ],
       "limits": [

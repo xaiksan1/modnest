@@ -84,10 +84,26 @@
       "sensitive": true,
       "default": ""
     },
+    "voiceEngine": {
+      "type": "string",
+      "title": "IGOR's engine",
+      "description": "machine = a real formant synthesizer (eSpeak NG, local, like 90s computers; speaks the language of its voice), cartesia = a human-like cloud voice with an optional robot effect.",
+      "default": "machine",
+      "options": [
+        "machine",
+        "cartesia"
+      ]
+    },
+    "machineVoice": {
+      "type": "string",
+      "title": "Machine voice (eSpeak NG)",
+      "description": "eSpeak NG voice name, language and variant (en-us+klatt4, fr+klatt, en+m3...). Replies are condensed and translated into this voice's language before being spoken.",
+      "default": "en-us+klatt4"
+    },
     "voiceStyle": {
       "type": "string",
       "title": "IGOR's voice",
-      "description": "robot (buzzing 90s computer), soft (grit only) or plain (no effect; also the fallback without ffmpeg).",
+      "description": "For the cartesia engine only: robot (buzzing 90s computer), soft (grit only) or plain (no effect).",
       "default": "robot",
       "options": [
         "robot",

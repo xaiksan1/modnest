@@ -114,18 +114,34 @@ async function listen($: EngineInterface, mode: Mode, then: 'submit' | 'fill', h
   }
 }
 
-// IGOR reads Claude's reply aloud; a long reply is first condensed into a short spoken message.
+const LANGUAGES: Record<string, string> = { en: 'English', fr: 'French', de: 'German', es: 'Spanish', it: 'Italian', pt: 'Portuguese', nl: 'Dutch' }
+// The language a machine voice speaks, from its eSpeak name: "en-us+klatt4" -> English.
+const machineLanguage = () => {
+  const code = text('machineVoice', 'en-us+klatt4').split('+')[0]!.split('-')[0]!
+  return LANGUAGES[code] ?? code
+}
+
+// IGOR reads Claude's reply aloud. A machine voice speaks one language, so the reply is first turned into a short
+// spoken message in that language; a human-like voice only condenses a long reply.
 async function say($: EngineInterface, answer: string) {
+  const isMachine = text('voiceEngine', 'machine') === 'machine'
   let spoken = answer
-  if (spoken.length > 350) {
+  const isPlainAscii = !/[^\x00-\x7f]/.test(answer)
+  if (isMachine ? !(isPlainAscii && answer.length <= 350) : answer.length > 350) {
+    const language = isMachine ? `in ${machineLanguage()}` : 'in the same language'
     const short = await $.model.complete({
       model: 'haiku',
       prompt:
-        "Here is a coding assistant's reply to the user. Turn it into a short spoken message in the same language: " +
-        '2 to 4 natural sentences, no markdown, no code, no paths or commands to spell out. Give the gist, and say ' +
-        'clearly if the user has to do something. Reply with the message only.\n<r>' + answer.slice(0, 6000) + '</r>',
+        `Here is a coding assistant's reply to the user. Turn it into a short spoken message ${language}: ` +
+        '2 to 4 plain sentences, no markdown, no code, no paths or commands to spell out, no abbreviations or symbols ' +
+        'a speech synthesizer would stumble on. Give the gist, and say clearly if the user has to do something. ' +
+        'Reply with the message only.\n<r>' + answer.slice(0, 6000) + '</r>',
     })
     if (short.isAnswered) spoken = short.text
+    else if (isMachine) {
+      $.ui.toast('IGOR: could not prepare the spoken message')
+      return
+    }
   }
   isSpeaking = true
   stopSpeaking = false
@@ -135,6 +151,8 @@ async function say($: EngineInterface, answer: string) {
       argv: [
         python(), `${root}/bin/speak.py`,
         ...envFileArgs(),
+        '--engine', text('voiceEngine', 'machine'),
+        '--machine-voice', text('machineVoice', 'en-us+klatt4'),
         '--language', text('language', 'en'),
         '--voice', text('voiceId'),
         '--style', text('voiceStyle', 'robot'),
