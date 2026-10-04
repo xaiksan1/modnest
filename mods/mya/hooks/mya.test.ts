@@ -59,3 +59,21 @@ test('the MYA band shows above the prompt, and the hotkey turns it to listening'
   expect((await idle.find({ type: 'Text', text: /tap Right Ctrl to talk/ })) !== undefined).toBe(true)
   await idle.unmount()
 })
+
+test('with the hotkey off, tapping Right Ctrl does nothing and the band says so', { options: { hotkeyOnStart: false } }, async ($, on) => {
+  const seen = engine(on as never, { key: 'TOGGLE', said: 'should not be heard' })
+  await $.session.start({ cwd: '/tmp' } as never)
+  await settle()
+  expect(seen.submitted).toEqual([])
+  const band = await $.ui.mount({ plugin: 'mya', surface: 'terminal', component: 'AbovePrompt', requestId: 'band', props: { hasSurvey: false } } as never)
+  expect((await band.find({ type: 'Text', text: /hotkey off/ })) !== undefined).toBe(true)
+  await band.unmount()
+})
+
+test('/mya on and /mya off switch the hotkey', async ($, on) => {
+  engine(on as never, { said: 'x' })
+  const off = await $.command.run({ command: 'mya', args: 'off' })
+  expect(off.text).toContain('off')
+  const again = await $.command.run({ command: 'mya', args: 'on' })
+  expect(again.text).toContain('is on')
+})

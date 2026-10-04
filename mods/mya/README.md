@@ -7,6 +7,7 @@ A voice for [Claude Code](https://code.claude.com), as a mod (a plugin of functi
 - A one-line **MYA band** above the prompt shows what it is doing: listening (with a moving level meter), thinking, speaking, and, when Claude has finished and waits for you, a **ringing telephone** (with an optional old-fashioned bell: `ringSound`).
 - MYA has a few lines of its own: a greeting when the session starts and a line when it did not hear you (`phrases`).
 - When you sent the question by voice, **MYA reads Claude's answer aloud** with a human-like Cartesia voice (Katie by default). Long answers are first condensed into a few spoken sentences; code and paths are not read out. Two options for other tastes: an ffmpeg robot effect (`voiceStyle: robot`) or a local formant synthesizer with no key and no network (`voiceEngine: machine`, eSpeak NG).
+- **Hotkey on/off:** `/mya off` and `/mya on`, or **Right Ctrl + Right Shift**, switch the hotkey so it never fires while you copy-paste elsewhere (the band turns red and says so). A Ctrl held a while, or used with a key, a mouse click or the scroll wheel (Ctrl+C, Ctrl+click...), is never taken for a tap.
 - `/mya` fills the prompt instead of sending (`/mya go` sends, `/mya stop` ends a recording, `/mya mute` toggles speech).
 
 ## Requirements
@@ -43,14 +44,16 @@ Then set your keys, either in the plugin's options (`/config`, stored in secure 
 | `micDevice` | `auto` | ALSA capture device (`auto` prefers a USB microphone; see `arecord -l`) |
 | `speakerDevice` | `default` | ALSA playback device |
 | `python` | `python3` | Python 3 command for the helpers |
-| `toggleKeycode` / `chordKeycode` | `105` / `65` | X11 keycodes (Right Ctrl / Space; list yours with `xmodmap -pke`) |
+| `toggleKeycode` / `chordKeycode` / `lockKeycode` | `105` / `65` / `62` | X11 keycodes: Right Ctrl, Space (translate), Right Shift (hotkey on/off); list yours with `xmodmap -pke` |
+| `maxTapSeconds` | `0.8` | A dictation key held longer than this is not a tap |
+| `hotkeyOnStart` | `true` | Whether the hotkey is active when the session starts |
 
 ## What it sends where (read this)
 
 - Your **microphone audio** goes to Deepgram while you record.
 - The **text of Claude's answer** (or its condensed version) goes to Cartesia when replies are spoken. With `voiceEngine: machine` nothing is sent for speech.
 - Translation and condensing use a small `haiku` call through your Claude Code session. The robot effect runs locally with ffmpeg.
-- The hotkey helper reads every X11 key event with `xinput test-xi2 --root` and **keeps only Right Ctrl and the chord key**; all other keys are dropped on the spot, nothing is stored or written. Read `bin/hotkey.py` (about 60 lines) before enabling it.
+- The hotkey helper reads every X11 key and mouse-button event with `xinput test-xi2 --root` and **keeps only Right Ctrl and its two chord keys**; everything else is dropped on the spot, nothing is stored or written. Read `bin/hotkey.py` (about 60 lines) before enabling it.
 
 ## Known limits
 

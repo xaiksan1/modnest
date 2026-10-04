@@ -70,6 +70,24 @@
       "description": "Pressed while the dictation key is held. 65 = Space.",
       "default": 65
     },
+    "lockKeycode": {
+      "type": "number",
+      "title": "Hotkey on/off key (X11 keycode)",
+      "description": "Pressed while the dictation key is held, it switches the hotkey on or off. 62 = Right Shift.",
+      "default": 62
+    },
+    "maxTapSeconds": {
+      "type": "number",
+      "title": "Longest tap (seconds)",
+      "description": "A dictation key held longer than this is not a tap, so holding Ctrl for copy-paste or Ctrl+click never starts the microphone.",
+      "default": 0.8
+    },
+    "hotkeyOnStart": {
+      "type": "boolean",
+      "title": "Hotkey on at start",
+      "description": "Whether the Right Ctrl hotkey is active when the session starts.",
+      "default": true
+    },
     "deepgramApiKey": {
       "type": "string",
       "title": "Deepgram API key",

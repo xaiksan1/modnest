@@ -36,6 +36,13 @@
           "text": "Tap with the chord, speak, tap: your words are transcribed, translated (English by default) and sent."
         },
         {
+          "keys": [
+            "Right Ctrl",
+            "Right Shift"
+          ],
+          "text": "Switch the hotkey off while you copy-paste elsewhere, and on again (also /mya off and /mya on). A Ctrl held a while, or used with a key, a click or the wheel, is never taken for a tap."
+        },
+        {
           "keys": [],
           "text": "When you asked by voice, MYA reads Claude's answer aloud with a human-like Cartesia voice. Long answers are first condensed into a few spoken sentences; code and paths are not read out. Prefer something else? An ffmpeg robot effect, or a local machine voice (eSpeak NG, no key, no network), are one option away."
         },
@@ -62,6 +69,14 @@
         {
           "name": "/mya mute",
           "text": "Toggle MYA's voice."
+        },
+        {
+          "name": "/mya off",
+          "text": "Switch the Right Ctrl hotkey off."
+        },
+        {
+          "name": "/mya on",
+          "text": "Switch it on again."
         }
       ],
       "requirements": [
@@ -167,16 +182,26 @@
           "Python 3 command for the helpers"
         ],
         [
-          "toggleKeycode / chordKeycode",
-          "105 / 65",
-          "X11 keycodes (Right Ctrl / Space); list yours with xmodmap -pke"
+          "toggleKeycode / chordKeycode / lockKeycode",
+          "105 / 65 / 62",
+          "X11 keycodes: Right Ctrl, Space (translate), Right Shift (hotkey on/off); list yours with xmodmap -pke"
+        ],
+        [
+          "maxTapSeconds",
+          "0.8",
+          "A dictation key held longer than this is not a tap"
+        ],
+        [
+          "hotkeyOnStart",
+          "true",
+          "Whether the hotkey is active when the session starts"
         ]
       ],
       "privacy": [
         "Your microphone audio goes to Deepgram while you record.",
         "The text of Claude's answer, or its condensed version, goes to Cartesia when replies are spoken. With the machine voice nothing is sent for speech.",
         "Translating and condensing use a small haiku call through your own Claude Code session.",
-        "The hotkey helper reads every X11 key event with xinput and keeps only Right Ctrl and the chord key; every other key is dropped on the spot, nothing is stored or written. It is about sixty lines: read bin/hotkey.py before enabling it."
+        "The hotkey helper reads every X11 key and mouse-button event with xinput and keeps only Right Ctrl and its two chord keys; every other key is dropped on the spot, nothing is stored or written. It is about sixty lines: read bin/hotkey.py before enabling it."
       ],
       "limits": [
         "The chord's Space also reaches the terminal as Ctrl+Space.",

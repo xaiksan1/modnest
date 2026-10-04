@@ -15,6 +15,7 @@ let isSpeaking = false
 let stopSpeaking = false
 let isVoiceTurn = false
 let isMuted = false
+let isKeysOn = true // the Right Ctrl hotkey: on, or off while you copy-paste elsewhere
 let currentPhase: Phase = 'idle'
 let ticker: { cancel: () => void } | undefined
 const stopFile = `/tmp/mya-${Math.random().toString(36).slice(2)}.stop` // one per session
@@ -29,7 +30,7 @@ const keysEnv = (): Record<string, string> => {
   return env
 }
 const message = (error: unknown) => (error instanceof Error ? error.message : String(error))
-const rest = (): Phase => (isMuted ? 'muted' : 'idle')
+const rest = (): Phase => (!isKeysOn ? 'off' : isMuted ? 'muted' : 'idle')
 
 // Claude has finished: the phone rings until you answer.
 async function waitForYou($: EngineInterface, isAnswer: boolean) {
@@ -41,6 +42,13 @@ async function waitForYou($: EngineInterface, isAnswer: boolean) {
 async function setPhase($: EngineInterface, next: Phase) {
   currentPhase = next
   await update($, phase, () => next)
+}
+
+// Switch the hotkey on or off (the mic stays untouched until you tap the key again).
+async function toggleKeys($: EngineInterface, on?: boolean) {
+  isKeysOn = on ?? !isKeysOn
+  if (currentPhase === 'idle' || currentPhase === 'off' || currentPhase === 'muted') await setPhase($, rest())
+  $.ui.toast(isKeysOn ? 'MYA: hotkey on' : 'MYA: hotkey off (Right Ctrl + Right Shift to turn it on)')
 }
 
 // One tap on the key: start listening, or, if already listening, finish (the text is then sent).
@@ -203,6 +211,7 @@ function ring($: EngineInterface) {
 }
 
 const LABEL: Record<Phase, string> = {
+  off: 'hotkey off, Right Ctrl + Right Shift or /mya on',
   waiting: 'your turn, tap Right Ctrl to answer',
   idle: 'tap Right Ctrl to talk',
   listening: 'listening, tap Right Ctrl to send',
@@ -211,7 +220,7 @@ const LABEL: Record<Phase, string> = {
   speaking: 'speaking, tap Right Ctrl to interrupt',
   muted: 'muted (/mya mute)',
 }
-const COLOR: Record<Phase, string> = { waiting: 'yellow', idle: 'gray', listening: 'green', translating: 'yellow', thinking: 'magenta', speaking: 'cyan', muted: 'gray' }
+const COLOR: Record<Phase, string> = { off: 'red', waiting: 'yellow', idle: 'gray', listening: 'green', translating: 'yellow', thinking: 'magenta', speaking: 'cyan', muted: 'gray' }
 const BARS = '▁▂▃▄▅▆▇█'
 // A telephone that rings: the handset rocks and the sound waves come and go.
 const PHONE = ['  ☎  ', ' ((☎)) ', '(((☎)))', ' ((☎)) ']
@@ -223,6 +232,7 @@ const meter = (tick: number, width = 12) =>
 
 export const register: Register = (on, config) => {
   options = config
+  isKeysOn = options.hotkeyOnStart !== false
 
   on('turn.complete', async ($, e, next) => {
     const done = await next(e)
@@ -249,29 +259,31 @@ export const register: Register = (on, config) => {
     root = $.plugin.root
     await $.command.register({
       name: 'mya',
-      description: 'MYA voice: /mya (dictate into the prompt), /mya go (dictate and send), /mya stop, /mya mute. Hotkey: Right Ctrl.',
+      description: 'MYA voice: /mya (dictate into the prompt), /mya go (dictate and send), /mya stop, /mya mute, /mya off|on (the Right Ctrl hotkey).',
     })
 
     if (options.phrases !== false && text('voiceEngine', 'cartesia') === 'machine') {
       void talk($, 'Mya online. I am ready, when you are.').catch(() => undefined)
     }
+    await setPhase($, rest())
     ticker?.cancel()
     ticker = $.clock.every(300, () => {
-      if (currentPhase !== 'idle' && currentPhase !== 'muted') void update($, frame, n => (n ?? 0) + 1) // the band animates
+      if (currentPhase !== 'idle' && currentPhase !== 'muted' && currentPhase !== 'off') void update($, frame, n => (n ?? 0) + 1) // the band animates
     })
 
     // The hotkey: tap = dictate / send, with the chord key held = translate.
     void (async () => {
       try {
         const keys = $.process.spawn({
-          argv: [python(), `${root}/bin/hotkey.py`, String(options.toggleKeycode ?? 105), String(options.chordKeycode ?? 65)],
+          argv: [python(), `${root}/bin/hotkey.py`, String(options.toggleKeycode ?? 105), String(options.chordKeycode ?? 65), String(options.lockKeycode ?? 62), String(options.maxTapSeconds ?? 0.8)],
         })
         for await (const piece of keys) {
           if (piece.stream !== 'stdout') continue
           for (const line of piece.text.split('\n')) {
             const [word, ...parts] = line.trim().split('\t')
-            if (word === 'TOGGLE') void pressed($, 'dictate')
-            else if (word === 'TRANSLATE') void pressed($, 'translate')
+            if (word === 'LOCK') void toggleKeys($)
+            else if (word === 'TOGGLE' && isKeysOn) void pressed($, 'dictate')
+            else if (word === 'TRANSLATE' && isKeysOn) void pressed($, 'translate')
             else if (word === 'ERR') $.ui.toast(`MYA: hotkey ${parts.join(' ')}`)
           }
         }
@@ -290,13 +302,17 @@ export const register: Register = (on, config) => {
       await $.fs.write(stopFile, 'stop')
       return { text: 'MYA: finishing…' }
     }
+    if (arg === 'off' || arg === 'on' || arg === 'keys') {
+      await toggleKeys($, arg === 'keys' ? undefined : arg === 'on')
+      return { text: isKeysOn ? 'MYA hotkey is on.' : 'MYA hotkey is off: Right Ctrl does nothing until /mya on, or Right Ctrl + Right Shift.' }
+    }
     if (arg === 'mute') {
       isMuted = !isMuted
       if (isMuted) stopSpeaking = true
       if (currentPhase === 'idle' || currentPhase === 'muted') await setPhase($, rest())
       return { text: isMuted ? 'MYA will stay quiet.' : 'MYA will speak again.' }
     }
-    if (arg !== '' && arg !== 'go') return { text: 'Usage: /mya, /mya go, /mya stop or /mya mute.' }
+    if (arg !== '' && arg !== 'go') return { text: 'Usage: /mya, /mya go, /mya stop, /mya mute, /mya off or /mya on.' }
     if (listening) return { text: 'MYA is already listening: speak, or /mya stop.' }
     void listen($, 'dictate', arg === 'go' ? 'submit' : 'fill', 'command').catch(async error => {
       listening = undefined
@@ -319,7 +335,7 @@ export const register: Register = (on, config) => {
       <Box>
         <Text bold inverse color={color}> MYA </Text>
         <Text color={color}> {live ? meter(tick) : now === 'thinking' ? dots.padEnd(3) : now === 'waiting' ? phone(tick) : '·'} </Text>
-        <Text dimColor>{LABEL[now]}</Text>
+        <Text dimColor>{isKeysOn || now === 'off' ? LABEL[now] : LABEL[now].replace(/, tap Right Ctrl.*$/, '')}</Text>
       </Box>
     )
   })
