@@ -1,0 +1,61 @@
+{
+  "site": {
+    "name": "modnest",
+    "tagline": "Small mods for Claude Code.",
+    "intro": "A mod is a plugin of function hooks that lives inside Claude Code: a hotkey, a pane, a status line, a voice. Each one here is a folder you load with a single flag, and each page says plainly what it does, what it needs and what it sends where.",
+    "status": "Pre-release: one mod so far, no public repository yet."
+  },
+  "mods": [
+    {
+      "id": "voice-input",
+      "title": "Voice input",
+      "version": "0.2.0",
+      "tagline": "Tap a key to talk to Claude Code, and hear it answer.",
+      "summary": "Hands-free voice for the terminal: dictate, translate in one key, and have Claude's answers read aloud.",
+      "does": [
+        { "keys": ["Right Ctrl"], "text": "Tap, speak, tap again: your words are transcribed and sent to Claude." },
+        { "keys": ["Right Ctrl", "Space"], "text": "Tap with the chord, speak, tap: your words are transcribed, translated (English by default) and sent." },
+        { "keys": [], "text": "When you asked by voice, Claude's answer is read aloud. Long answers are first condensed into a few spoken sentences; code and paths are not read out." },
+        { "keys": ["Right Ctrl"], "text": "Tap while Claude is talking to cut it off and start your next question." }
+      ],
+      "commands": [
+        { "name": "/voice", "text": "Fill the prompt with the dictation instead of sending it." },
+        { "name": "/voice go", "text": "Dictate and send." },
+        { "name": "/voice stop", "text": "End a recording." },
+        { "name": "/voice mute", "text": "Toggle spoken replies." }
+      ],
+      "requirements": [
+        "Linux with an X11 session (not Wayland, macOS or Windows: the hotkey is read with xinput)",
+        "arecord and aplay (alsa-utils), xinput, and Python 3. The helpers use the standard library only: nothing to pip install",
+        "A Deepgram API key for speech-to-text",
+        "Optional: a Cartesia API key to hear replies"
+      ],
+      "install": [
+        { "label": "Load the mod", "command": "claude --plugin-dir /path/to/claude-mods/voice-input" },
+        { "label": "Check it", "command": "claude plugin validate /path/to/claude-mods/voice-input" }
+      ],
+      "installNote": "Then set your keys in the plugin's options (/config, kept in secure storage) or in your shell environment as DEEPGRAM_API_KEY and CARTESIA_API_KEY. Never put keys in a file you commit.",
+      "options": [
+        ["language", "en", "Deepgram language code of what you say; also the speech language of replies"],
+        ["translateTo", "English", "Target language of the translate chord"],
+        ["speakReplies", "true", "Read answers aloud when the question was voiced"],
+        ["voiceId", "(empty)", "Cartesia voice id; empty uses a default library voice"],
+        ["micDevice", "auto", "ALSA capture device; auto prefers a USB microphone"],
+        ["speakerDevice", "default", "ALSA playback device"],
+        ["python", "python3", "Python 3 command for the helpers"],
+        ["toggleKeycode / chordKeycode", "105 / 65", "X11 keycodes (Right Ctrl / Space); list yours with xmodmap -pke"]
+      ],
+      "privacy": [
+        "Your microphone audio goes to Deepgram while you record.",
+        "The text of Claude's answer, or its condensed version, goes to Cartesia when replies are spoken.",
+        "Translating and condensing use a small haiku call through your own Claude Code session.",
+        "The hotkey helper reads every X11 key event with xinput and keeps only Right Ctrl and the chord key; every other key is dropped on the spot, nothing is stored or written. It is about sixty lines: read bin/hotkey.py before enabling it."
+      ],
+      "limits": [
+        "The chord's Space also reaches the terminal as Ctrl+Space.",
+        "Recording is manual: it ends when you tap the key again, or after three minutes.",
+        "X11 only. Not tested on other desktops or distributions."
+      ]
+    }
+  ]
+}

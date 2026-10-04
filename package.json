@@ -1,0 +1,6 @@
+{
+  "name": "modnest",
+  "private": true,
+  "type": "module",
+  "scripts": { "build": "bun build.ts", "serve": "bun serve.ts", "test": "bun test" }
+}
