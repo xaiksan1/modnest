@@ -100,6 +100,7 @@ test('a Piper voice speaks ONE language: even a short English reply is turned in
   await settle()
   expect(spoke.prompts.length).toBe(1)
   expect(spoke.prompts[0]).toContain('in French')
+  expect(spoke.prompts[0]).toContain('MUST be written entirely in French')
   expect(spoke.spawned[0]?.input).toBe('Voici le résumé parlé.')
   expect(spoke.spawned[0]?.argv).toContain('--piper-model')
 })

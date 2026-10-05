@@ -158,6 +158,7 @@ async function say($: EngineInterface, answer: string) {
       model: 'haiku',
       prompt:
         `Here is a coding assistant's reply to the user. Turn it into a short spoken message ${language}: ` +
+        (voiceLanguage ? `the message MUST be written entirely ${language}, translating anything that is in another language (keep only names of files or tools as they are). ` : '') +
         '2 to 4 short plain sentences, one idea each, with commas where a speaker would pause, like an old computer reading carefully; ' +
         'no markdown, no code, no paths or commands to spell out, no abbreviations or symbols ' +
         'a speech synthesizer would stumble on. Give the gist, and say clearly if the user has to do something. ' +
