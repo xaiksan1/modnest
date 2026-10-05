@@ -77,3 +77,53 @@ test('/mya on and /mya off switch the hotkey', async ($, on) => {
   const again = await $.command.run({ command: 'mya', args: 'on' })
   expect(again.text).toContain('is on')
 })
+
+test('a Piper voice speaks ONE language: even a short English reply is turned into a message in the voice\'s language (French)', { options: { voiceEngine: 'piper', piperModel: '/m/fr_FR-siwis-medium.onnx' } }, async ($, on) => {
+  const spoke = { prompts: [] as string[], spawned: [] as { argv: readonly string[]; input?: string }[] }
+  on('process.spawn' as never, async function* (_$: unknown, e: { argv: readonly string[]; input?: string }) {
+    if (isHotkey(e)) yield { stream: 'stdout' as const, text: 'TOGGLE\n' }
+    else if (e.argv.some(a => a.endsWith('speak.py'))) spoke.spawned.push({ argv: e.argv, input: e.input })
+    else yield { stream: 'stdout' as const, text: 'TEXT\tbonjour\n' }
+    return done
+  })
+  on('prompt.submit' as never, async () => ({ value: {} }))
+  on('prompt.fill' as never, async () => ({ value: { isFilled: true } }))
+  on('model.complete' as never, async (_$: unknown, e: { prompt: string }) => { spoke.prompts.push(e.prompt); return { value: { isAnswered: true, text: 'Voici le résumé parlé.', usage: {} } } })
+  on('ui.status' as never, async () => ({ value: undefined }))
+  on('ui.toast' as never, async () => ({ value: undefined }))
+  on('command.register' as never, async () => ({ value: undefined }))
+  on('session.start' as never, async (_$: unknown, e: { cwd: string }) => ({ cwd: e.cwd }))
+  on('turn.complete' as never, async (_$: unknown, e: { answer: string }) => ({ text: e.answer }))
+  await $.session.start({ cwd: '/tmp' } as never)
+  await settle()                                                      // the voice turn is submitted: MYA now expects the answer
+  await $.turn.complete({ answer: 'Done. Tests pass.', durationMs: 5, isAborted: false, turnId: 't1', reason: 'answer' } as never)
+  await settle()
+  expect(spoke.prompts.length).toBe(1)
+  expect(spoke.prompts[0]).toContain('in French')
+  expect(spoke.spawned[0]?.input).toBe('Voici le résumé parlé.')
+  expect(spoke.spawned[0]?.argv).toContain('--piper-model')
+})
+
+test('a Cartesia voice still reads a short reply as it is (no model call)', async ($, on) => {
+  const spoke = { prompts: [] as string[], spawned: [] as { input?: string }[] }
+  on('process.spawn' as never, async function* (_$: unknown, e: { argv: readonly string[]; input?: string }) {
+    if (isHotkey(e)) yield { stream: 'stdout' as const, text: 'TOGGLE\n' }
+    else if (e.argv.some(a => a.endsWith('speak.py'))) spoke.spawned.push({ input: e.input })
+    else yield { stream: 'stdout' as const, text: 'TEXT\tbonjour\n' }
+    return done
+  })
+  on('prompt.submit' as never, async () => ({ value: {} }))
+  on('prompt.fill' as never, async () => ({ value: { isFilled: true } }))
+  on('model.complete' as never, async (_$: unknown, e: { prompt: string }) => { spoke.prompts.push(e.prompt); return { value: { isAnswered: true, text: 'x', usage: {} } } })
+  on('ui.status' as never, async () => ({ value: undefined }))
+  on('ui.toast' as never, async () => ({ value: undefined }))
+  on('command.register' as never, async () => ({ value: undefined }))
+  on('session.start' as never, async (_$: unknown, e: { cwd: string }) => ({ cwd: e.cwd }))
+  on('turn.complete' as never, async (_$: unknown, e: { answer: string }) => ({ text: e.answer }))
+  await $.session.start({ cwd: '/tmp' } as never)
+  await settle()
+  await $.turn.complete({ answer: 'Tout est bon.', durationMs: 5, isAborted: false, turnId: 't2', reason: 'answer' } as never)
+  await settle()
+  expect(spoke.prompts.length).toBe(0)
+  expect(spoke.spawned[0]?.input).toBe('Tout est bon.')
+})

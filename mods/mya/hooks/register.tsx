@@ -137,14 +137,23 @@ const machineLanguage = () => {
   return LANGUAGES[code] ?? code
 }
 
-// MYA reads Claude's reply aloud. A machine voice speaks one language, so the reply is first turned into a short
-// spoken message in that language; a human-like voice only condenses a long reply.
+// The language a Piper voice speaks, from its file name: "fr_FR-siwis-medium.onnx" -> French.
+const piperLanguage = () => {
+  const code = /^([a-z]{2})[_-]/.exec(text('piperModel').split('/').pop() ?? '')?.[1] ?? text('language', 'en')
+  return LANGUAGES[code] ?? code
+}
+
+// MYA reads Claude's reply aloud. A machine or Piper voice speaks ONE language (a French voice reading English is unintelligible), so the
+// reply is first turned into a short spoken message in that language; a human-like cloud voice only condenses a long reply.
 async function say($: EngineInterface, answer: string) {
-  const isMachine = text('voiceEngine', 'cartesia') === 'machine'
+  const engine = text('voiceEngine', 'cartesia')
+  const isMachine = engine === 'machine'
+  const voiceLanguage = isMachine ? machineLanguage() : engine === 'piper' ? piperLanguage() : undefined
   let spoken = answer
   const isPlainAscii = !/[^\x00-\x7f]/.test(answer)
-  if (isMachine ? !(isPlainAscii && answer.length <= 350) : answer.length > 350) {
-    const language = isMachine ? `in ${machineLanguage()}` : 'in the same language'
+  // A machine voice speaks short plain ASCII as it is; Piper cannot tell the language of a text, so it always goes through the model.
+  if (isMachine ? !(isPlainAscii && answer.length <= 350) : voiceLanguage ? true : answer.length > 350) {
+    const language = voiceLanguage ? `in ${voiceLanguage}` : 'in the same language'
     const short = await $.model.complete({
       model: 'haiku',
       prompt:
@@ -155,7 +164,7 @@ async function say($: EngineInterface, answer: string) {
         'Reply with the message only.\n<r>' + answer.slice(0, 6000) + '</r>',
     })
     if (short.isAnswered) spoken = short.text
-    else if (isMachine) {
+    else if (voiceLanguage) {
       $.ui.toast('MYA: could not prepare the spoken message')
       return
     }
