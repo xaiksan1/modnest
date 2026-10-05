@@ -174,6 +174,7 @@ async function talk($: EngineInterface, spoken: string) {
         python(), `${root}/bin/speak.py`,
         ...envFileArgs(),
         '--engine', text('voiceEngine', 'cartesia'),
+        '--piper-model', text('piperModel'),
         '--machine-voice', text('machineVoice', 'en-us+klatt4'),
         '--machine-rate', String(Number(options.machineRate ?? 155)),
         '--machine-wordgap', String(Number(options.machineWordGap ?? 4)),

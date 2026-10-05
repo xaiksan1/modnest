@@ -1,8 +1,8 @@
-"""speak.py — MYA's voice: by default Cartesia text-to-speech -> aplay (optionally an ffmpeg robot effect, or a local eSpeak NG machine voice).
+"""speak.py — MYA's voice: by default Cartesia text-to-speech -> aplay (optionally an ffmpeg robot effect, a local eSpeak NG machine voice, or the local neural Piper voice).
 
 The text arrives on standard input. Markdown, code and URLs are stripped before
 speaking. The key is read from CARTESIA_API_KEY (or an optional --env file) and
-is never printed. Prints "ERR<tab>reason" on failure. Standard library only.
+is never printed. Prints "ERR<tab>reason" on failure. Standard library only (the optional Piper engine imports the `piper` package from the interpreter that runs this script).
 """
 import argparse
 import json
@@ -63,6 +63,57 @@ def speakable(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+def sentences(text: str, limit: int = 400) -> list:
+    """Cut the text after each sentence end; a run longer than `limit` characters is cut at a space. Speaking one sentence at a time lets playback start early."""
+    parts = []
+    for piece in re.split(r"(?<=[.!?…])\s+", text.strip()):
+        while len(piece) > limit:
+            cut = piece.rfind(" ", 0, limit)
+            cut = cut if cut > 0 else limit
+            parts.append(piece[:cut].strip())
+            piece = piece[cut:].strip()
+        if piece:
+            parts.append(piece)
+    return parts
+
+
+def speak_piper(text: str, a) -> None:
+    """Piper: a local neural voice (no network, no key). Sentences are synthesized one after the other and streamed into ONE aplay process,
+    so playback never stops between sentences as long as synthesis is faster than speech (about 5x on a modest CPU)."""
+    if not a.piper_model:
+        print("ERR\tno Piper model configured (set piperModel to a .onnx voice file)", flush=True)
+        return
+    if not os.path.exists(a.piper_model):
+        print("ERR\tPiper model file not found", flush=True)
+        return
+    try:
+        from piper import PiperVoice
+    except ImportError:
+        print("ERR\tthe piper package is not installed for this Python (pip install piper-tts)", flush=True)
+        return
+    try:
+        voice = PiperVoice.load(a.piper_model)
+        extra = {}
+        if abs(a.speed - 1.0) > 0.01:
+            from piper import SynthesisConfig
+            extra["syn_config"] = SynthesisConfig(length_scale=1.0 / min(2.0, max(0.5, a.speed)))
+        player = None
+        try:
+            for sentence in sentences(text):
+                for chunk in voice.synthesize(sentence, **extra):
+                    if player is None:
+                        player = subprocess.Popen(["aplay", "-q", "-D", a.device, "-t", "raw", "-f", "S16_LE", "-r", str(chunk.sample_rate), "-c", "1"], stdin=subprocess.PIPE)
+                    player.stdin.write(chunk.audio_int16_bytes)
+        finally:
+            if player is not None:
+                player.stdin.close()
+                player.wait()
+    except BrokenPipeError:
+        pass
+    except Exception as e:
+        print(f"ERR\tPiper failed ({e.__class__.__name__}: {e})", flush=True)
+
+
 def speak_machine(text: str, a) -> None:
     """MYA's real machine voice: a formant synthesizer, rendered locally, no network and no key."""
     try:
@@ -84,7 +135,8 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--env", default="")
     ap.add_argument("--voice", default="")
-    ap.add_argument("--engine", default="cartesia", choices=["machine", "cartesia"], help="cartesia = human-like cloud voice, machine = eSpeak NG formant synthesizer (local)")
+    ap.add_argument("--engine", default="cartesia", choices=["machine", "cartesia", "piper"], help="cartesia = human-like cloud voice, machine = eSpeak NG formant synthesizer (local), piper = local neural voice (needs the piper package and a voice file)")
+    ap.add_argument("--piper-model", default="", help="path to a Piper .onnx voice (its .onnx.json sits next to it)")
     ap.add_argument("--machine-voice", default="en-us+klatt4")
     ap.add_argument("--machine-rate", type=int, default=155, help="eSpeak words per minute at speed 1.0")
     ap.add_argument("--machine-wordgap", type=int, default=4, help="extra pause between words, in 10 ms units")
@@ -98,6 +150,8 @@ def main() -> None:
         return
     if a.engine == "machine":
         return speak_machine(text, a)
+    if a.engine == "piper":
+        return speak_piper(text, a)
     key = load_key(a.env)
     if not key:
         print("ERR\tCartesia API key not found", flush=True)

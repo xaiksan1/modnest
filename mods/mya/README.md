@@ -6,7 +6,7 @@ A voice for [Claude Code](https://code.claude.com), as a mod (a plugin of functi
 - **Right Ctrl + Space** → speak → tap: your words are transcribed, **translated** (default: into English) and sent.
 - A one-line **MYA band** above the prompt shows what it is doing: listening (with a moving level meter), thinking, speaking, and, when Claude has finished and waits for you, a **ringing telephone** (with an optional old-fashioned bell: `ringSound`).
 - MYA has a few lines of its own: a greeting when the session starts and a line when it did not hear you (`phrases`).
-- When you sent the question by voice, **MYA reads Claude's answer aloud** with a human-like Cartesia voice (Katie by default). Long answers are first condensed into a few spoken sentences; code and paths are not read out. Two options for other tastes: an ffmpeg robot effect (`voiceStyle: robot`) or a local formant synthesizer with no key and no network (`voiceEngine: machine`, eSpeak NG).
+- When you sent the question by voice, **MYA reads Claude's answer aloud** with a human-like Cartesia voice (Katie by default). Long answers are first condensed into a few spoken sentences; code and paths are not read out. Three options for other tastes: an ffmpeg robot effect (`voiceStyle: robot`), a local formant synthesizer with no key and no network (`voiceEngine: machine`, eSpeak NG), or a free local neural voice (`voiceEngine: piper`, see below).
 - **Hotkey on/off:** `/mya off` and `/mya on`, or **Right Ctrl + Right Shift**, switch the hotkey so it never fires while you copy-paste elsewhere (the band turns red and says so). A Ctrl held a while, or used with a key, a mouse click or the scroll wheel (Ctrl+C, Ctrl+click...), is never taken for a tap.
 - `/mya` fills the prompt instead of sending (`/mya go` sends, `/mya stop` ends a recording, `/mya mute` toggles speech).
 
@@ -32,7 +32,8 @@ Then set your keys, either in the plugin's options (`/config`, stored in secure 
 | `keyterms` | `Mya` | Comma-separated names Deepgram should favour (and that common mishearings are corrected to) |
 | `translateTo` | `English` | Target language of the translate chord |
 | `speakReplies` | `true` | Read answers aloud when the question was voiced |
-| `voiceEngine` | `cartesia` | `cartesia` (human-like cloud voice) or `machine` (eSpeak NG, local) |
+| `voiceEngine` | `cartesia` | `cartesia` (human-like cloud voice), `machine` (eSpeak NG, local) or `piper` (local neural voice) |
+| `piperModel` | — | Piper engine only: path to a voice `.onnx` file (its `.onnx.json` beside it) |
 | `machineVoice` | `en-us+klatt4` | Machine engine only: eSpeak NG voice and variant (`fr+klatt`, `en+m3`...) |
 | `voiceStyle` | `plain` | Cartesia only: `plain`, `robot` (buzzing 90s computer) or `soft` (grit only) |
 | `machineRate` / `machineWordGap` | `155` / `4` | Rhythm of the machine voice: words per minute and the pause between words |
@@ -67,3 +68,14 @@ Then set your keys, either in the plugin's options (`/config`, stored in secure 
 claude plugin validate mods/mya
 claude plugin test mods/mya
 ```
+
+## Optional: a free local voice with Piper
+
+No account, no credit, no network. Piper is a separate project under the GPL-3.0 licence; MYA does **not** bundle it, you install it yourself, for the Python you give MYA in the `python` option:
+
+```bash
+python -m pip install piper-tts                               # installs piper-tts and pathvalidate
+python -m piper.download_voices --download-dir ~/.local/share/piper fr_FR-siwis-medium
+```
+
+Then set `voiceEngine: piper`, `piperModel: ~/.local/share/piper/fr_FR-siwis-medium.onnx` (full path) and `python` to that interpreter. Sentences are synthesized one after the other and streamed into a single `aplay`, so playback does not stop between sentences as long as synthesis is faster than speech (about 5x on a modest CPU in our test).

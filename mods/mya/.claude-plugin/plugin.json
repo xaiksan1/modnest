@@ -105,12 +105,19 @@
     "voiceEngine": {
       "type": "string",
       "title": "MYA's engine",
-      "description": "cartesia = a human-like cloud voice (default); machine = a formant synthesizer (eSpeak NG, local, no key; speaks one language, so replies are condensed and translated into it).",
+      "description": "cartesia = a human-like cloud voice (default); machine = a formant synthesizer (eSpeak NG, local, no key; speaks one language, so replies are condensed and translated into it). piper = a local neural voice (free, offline, about 5x faster than speech on a modest CPU; needs `pip install piper-tts` for the Python you set below and a voice file in piperModel). Piper is GPL-3.0 and is NOT bundled: you install it yourself.",
       "default": "cartesia",
       "options": [
         "cartesia",
-        "machine"
+        "machine",
+        "piper"
       ]
+    },
+    "piperModel": {
+      "type": "string",
+      "title": "Piper voice file",
+      "description": "Path to a Piper .onnx voice (its .onnx.json must sit next to it), e.g. fr_FR-siwis-medium.onnx. Only used when the engine is piper.",
+      "default": ""
     },
     "machineVoice": {
       "type": "string",
