@@ -128,3 +128,27 @@ test('a Cartesia voice still reads a short reply as it is (no model call)', asyn
   expect(spoke.prompts.length).toBe(0)
   expect(spoke.spawned[0]?.input).toBe('Tout est bon.')
 })
+
+test('if the hotkey listener stops (xinput died), MYA starts it again by itself', { options: { hotkeyRetryMs: 10 } }, async ($, on) => {
+  const seen = { starts: 0, submitted: [] as string[] }
+  on('process.spawn' as never, async function* (_$: unknown, e: Spawned) {
+    if (isHotkey(e)) {
+      seen.starts += 1
+      if (seen.starts === 3) yield { stream: 'stdout' as const, text: 'TOGGLE\n' } // the third listener works (the others die at once)
+      else yield { stream: 'stdout' as const, text: 'ERR\txinput stopped\n' }       // the first two die at once
+    } else yield { stream: 'stdout' as const, text: 'TEXT\tça remarche\n' }
+    return done
+  })
+  on('clock.sleep' as never, async (_$: unknown, e: { ms?: number } | number) => { await new Promise(r => setTimeout(r, 5)); return { value: undefined } })
+  on('prompt.submit' as never, async (_$: unknown, e: { text: string }) => { seen.submitted.push(e.text); return { value: {} } })
+  on('prompt.fill' as never, async () => ({ value: { isFilled: true } }))
+  on('model.complete' as never, async () => ({ value: { isAnswered: true, text: '', usage: {} } }))
+  on('ui.status' as never, async () => ({ value: undefined }))
+  on('ui.toast' as never, async () => ({ value: undefined }))
+  on('command.register' as never, async () => ({ value: undefined }))
+  on('session.start' as never, async (_$: unknown, e: { cwd: string }) => ({ cwd: e.cwd }))
+  await $.session.start({ cwd: '/tmp' } as never)
+  await new Promise(r => setTimeout(r, 400))
+  expect(seen.starts).toBeGreaterThanOrEqual(3)
+  expect(seen.submitted).toEqual(['ça remarche'])
+})

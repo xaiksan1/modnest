@@ -283,23 +283,39 @@ export const register: Register = (on, config) => {
     })
 
     // The hotkey: tap = dictate / send, with the chord key held = translate.
+    // The listener (xinput) can die — keyboard replugged, X restarted — and MYA would stay deaf for good. So it is started again, waiting longer
+    // after each quick death (and giving up after repeated failures to start at all).
     void (async () => {
-      try {
-        const keys = $.process.spawn({
-          argv: [python(), `${root}/bin/hotkey.py`, String(options.toggleKeycode ?? 105), String(options.chordKeycode ?? 65), String(options.lockKeycode ?? 62), String(options.maxTapSeconds ?? 0.8)],
-        })
-        for await (const piece of keys) {
-          if (piece.stream !== 'stdout') continue
-          for (const line of piece.text.split('\n')) {
-            const [word, ...parts] = line.trim().split('\t')
-            if (word === 'LOCK') void toggleKeys($)
-            else if (word === 'TOGGLE' && isKeysOn) void pressed($, 'dictate')
-            else if (word === 'TRANSLATE' && isKeysOn) void pressed($, 'translate')
-            else if (word === 'ERR') $.ui.toast(`MYA: hotkey ${parts.join(' ')}`)
+      let quickDeaths = 0
+      let startFailures = 0
+      while (startFailures < 5) {
+        const startedAt = Date.now()
+        try {
+          const keys = $.process.spawn({
+            argv: [python(), `${root}/bin/hotkey.py`, String(options.toggleKeycode ?? 105), String(options.chordKeycode ?? 65), String(options.lockKeycode ?? 62), String(options.maxTapSeconds ?? 0.8)],
+          })
+          for await (const piece of keys) {
+            if (piece.stream !== 'stdout') continue
+            for (const line of piece.text.split('\n')) {
+              const [word, ...parts] = line.trim().split('\t')
+              if (word === 'LOCK') void toggleKeys($)
+              else if (word === 'TOGGLE' && isKeysOn) void pressed($, 'dictate')
+              else if (word === 'TRANSLATE' && isKeysOn) void pressed($, 'translate')
+              else if (word === 'ERR') $.ui.toast(`MYA: hotkey ${parts.join(' ')}`)
+            }
           }
+          startFailures = 0
+        } catch {
+          startFailures += 1
+          if (startFailures === 5) $.ui.toast('MYA: the hotkey is unavailable')
         }
-      } catch {
-        $.ui.toast('MYA: the hotkey is unavailable')
+        quickDeaths = Date.now() - startedAt > 10_000 ? 0 : quickDeaths + 1
+        if (quickDeaths === 4) $.ui.toast('MYA: the hotkey listener keeps stopping, retrying')
+        try {
+          await $.clock.sleep(Math.min(Number(options.hotkeyRetryMs ?? 2000) * 2 ** Math.min(quickDeaths, 4), 30_000))
+        } catch {
+          return // the module was unloaded
+        }
       }
     })()
 
