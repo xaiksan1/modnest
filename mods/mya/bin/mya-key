@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+"""mya-key toggle|translate|lock — drops one word into MYA's private hotkey socket.
+
+Run by the desktop's own keyboard shortcut (see mya_gnome_shortcuts.py). It reads no key and writes nothing but that one word.
+Exit codes: 0 done, 1 MYA is not running, 2 bad usage.
+"""
+import os
+import socket
+import sys
+
+WORDS = ("toggle", "translate", "lock")
+
+
+def main() -> int:
+    if len(sys.argv) != 2 or sys.argv[1] not in WORDS:
+        print("usage: mya-key toggle|translate|lock", file=sys.stderr)
+        return 2
+    path = os.environ.get("MYA_HOTKEY_SOCKET")
+    if not path:
+        runtime = os.environ.get("XDG_RUNTIME_DIR")
+        path = os.path.join(runtime, "mya-hotkey.sock") if runtime else None
+    if not path:
+        print("MYA: no runtime directory (XDG_RUNTIME_DIR is not set)", file=sys.stderr)
+        return 1
+    try:
+        with socket.socket(socket.AF_UNIX) as s:
+            s.settimeout(2.0)
+            s.connect(path)
+            s.sendall((sys.argv[1] + "\n").encode())
+            reply = s.recv(16).decode(errors="replace").strip()
+    except OSError as e:
+        print(f"MYA is not running (no hotkey helper at {path}: {e.__class__.__name__})", file=sys.stderr)
+        return 1
+    if reply != "ok":
+        print(f"MYA refused the word ({reply or 'no answer'})", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

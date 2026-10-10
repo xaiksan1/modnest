@@ -15,7 +15,7 @@ def run(events, args=()):
         with open(fake, "w") as f:
             f.write("#!/bin/sh\ncat <<'EOT'\n" + "".join(events) + "EOT\n")
         os.chmod(fake, os.stat(fake).st_mode | stat.S_IXUSR)
-        out = subprocess.run([sys.executable, HOTKEY, *map(str, args)], env={**os.environ, "PATH": d + ":" + os.environ["PATH"]},
+        out = subprocess.run([sys.executable, HOTKEY, *map(str, args)], env={**os.environ, "PATH": d + ":" + os.environ["PATH"], "MYA_HOTKEY_MODE": "x11"},
                              capture_output=True, text=True, timeout=20).stdout
     return [w for w in out.split("\n") if w and not w.startswith("ERR")]
 

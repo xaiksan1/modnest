@@ -15,7 +15,14 @@ let isSpeaking = false
 let stopSpeaking = false
 let isVoiceTurn = false
 let isMuted = false
-let isKeysOn = true // the Right Ctrl hotkey: on, or off while you copy-paste elsewhere
+let isKeysOn = true // the hotkey: on, or off while you copy-paste elsewhere
+// What the keys are called. The helper says which mode it runs in (a `MODE` line): on X11 it reads Right Ctrl itself; under Wayland
+// no program may read the keyboard, so the keys are GNOME shortcuts that run `mya-key` (see bin/mya_gnome_shortcuts.py).
+const KEY_NAMES = {
+  x11: { tap: 'Right Ctrl', lock: 'Right Ctrl + Right Shift' },
+  socket: { tap: 'Ctrl+Alt+M', lock: 'Ctrl+Alt+K' },
+}
+let keyNames = KEY_NAMES.x11
 let currentPhase: Phase = 'idle'
 let ticker: { cancel: () => void } | undefined
 const stopFile = `/tmp/mya-${Math.random().toString(36).slice(2)}.stop` // one per session
@@ -48,7 +55,7 @@ async function setPhase($: EngineInterface, next: Phase) {
 async function toggleKeys($: EngineInterface, on?: boolean) {
   isKeysOn = on ?? !isKeysOn
   if (currentPhase === 'idle' || currentPhase === 'off' || currentPhase === 'muted') await setPhase($, rest())
-  $.ui.toast(isKeysOn ? 'MYA: hotkey on' : 'MYA: hotkey off (Right Ctrl + Right Shift to turn it on)')
+  $.ui.toast(isKeysOn ? 'MYA: hotkey on' : `MYA: hotkey off (${keyNames.lock} to turn it on)`)
 }
 
 // One tap on the key: start listening, or, if already listening, finish (the text is then sent).
@@ -221,16 +228,16 @@ function ring($: EngineInterface) {
   })()
 }
 
-const LABEL: Record<Phase, string> = {
-  off: 'hotkey off, Right Ctrl + Right Shift or /mya on',
-  waiting: 'your turn, tap Right Ctrl to answer',
-  idle: 'tap Right Ctrl to talk',
-  listening: 'listening, tap Right Ctrl to send',
-  translating: 'translating, tap Right Ctrl to send',
+const labels = (): Record<Phase, string> => ({
+  off: `hotkey off, ${keyNames.lock} or /mya on`,
+  waiting: `your turn, tap ${keyNames.tap} to answer`,
+  idle: `tap ${keyNames.tap} to talk`,
+  listening: `listening, tap ${keyNames.tap} to send`,
+  translating: `translating, tap ${keyNames.tap} to send`,
   thinking: 'thinking',
-  speaking: 'speaking, tap Right Ctrl to interrupt',
+  speaking: `speaking, tap ${keyNames.tap} to interrupt`,
   muted: 'muted (/mya mute)',
-}
+})
 const COLOR: Record<Phase, string> = { off: 'red', waiting: 'yellow', idle: 'gray', listening: 'green', translating: 'yellow', thinking: 'magenta', speaking: 'cyan', muted: 'gray' }
 const BARS = '▁▂▃▄▅▆▇█'
 // A telephone that rings: the handset rocks and the sound waves come and go.
@@ -270,7 +277,7 @@ export const register: Register = (on, config) => {
     root = $.plugin.root
     await $.command.register({
       name: 'mya',
-      description: 'MYA voice: /mya (dictate into the prompt), /mya go (dictate and send), /mya stop, /mya mute, /mya off|on (the Right Ctrl hotkey).',
+      description: 'MYA voice: /mya (dictate into the prompt), /mya go (dictate and send), /mya stop, /mya mute, /mya off|on (the hotkey).',
     })
 
     if (options.phrases !== false && text('voiceEngine', 'cartesia') === 'machine') {
@@ -301,7 +308,10 @@ export const register: Register = (on, config) => {
               if (word === 'LOCK') void toggleKeys($)
               else if (word === 'TOGGLE' && isKeysOn) void pressed($, 'dictate')
               else if (word === 'TRANSLATE' && isKeysOn) void pressed($, 'translate')
-              else if (word === 'ERR') $.ui.toast(`MYA: hotkey ${parts.join(' ')}`)
+              else if (word === 'MODE') {
+                keyNames = parts[0] === 'socket' ? KEY_NAMES.socket : KEY_NAMES.x11 // an unknown mode shows the X11 names, never nonsense
+                await setPhase($, currentPhase) // the band is drawn again with the right key names
+              } else if (word === 'ERR') $.ui.toast(`MYA: hotkey ${parts.join(' ')}`)
             }
           }
           startFailures = 0
@@ -331,7 +341,7 @@ export const register: Register = (on, config) => {
     }
     if (arg === 'off' || arg === 'on' || arg === 'keys') {
       await toggleKeys($, arg === 'keys' ? undefined : arg === 'on')
-      return { text: isKeysOn ? 'MYA hotkey is on.' : 'MYA hotkey is off: Right Ctrl does nothing until /mya on, or Right Ctrl + Right Shift.' }
+      return { text: isKeysOn ? 'MYA hotkey is on.' : `MYA hotkey is off: ${keyNames.tap} does nothing until /mya on, or ${keyNames.lock}.` }
     }
     if (arg === 'mute') {
       isMuted = !isMuted
@@ -362,7 +372,7 @@ export const register: Register = (on, config) => {
       <Box>
         <Text bold inverse color={color}> MYA </Text>
         <Text color={color}> {live ? meter(tick) : now === 'thinking' ? dots.padEnd(3) : now === 'waiting' ? phone(tick) : '·'} </Text>
-        <Text dimColor>{isKeysOn || now === 'off' ? LABEL[now] : LABEL[now].replace(/, tap Right Ctrl.*$/, '')}</Text>
+        <Text dimColor>{isKeysOn || now === 'off' ? labels()[now] : labels()[now].split(', tap ')[0]}</Text>
       </Box>
     )
   })

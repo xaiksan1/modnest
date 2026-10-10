@@ -80,8 +80,8 @@
         }
       ],
       "requirements": [
-        "Linux with an X11 session (not Wayland, macOS or Windows: the hotkey is read with xinput)",
-        "arecord and aplay (alsa-utils), xinput and Python 3. ffmpeg only for the optional robot effect and bell; libespeak-ng only for the optional machine voice. The helpers use the standard library only: nothing to pip install",
+        "Linux (not macOS or Windows). On X11 the hotkey is read with xinput; on Wayland it is three GNOME keyboard shortcuts that the included installer sets up",
+        "arecord and aplay (alsa-utils), xinput (X11 only) and Python 3. ffmpeg only for the optional robot effect and bell; libespeak-ng only for the optional machine voice. The helpers use the standard library only: nothing to pip install",
         "A Deepgram API key for speech-to-text",
         "A Cartesia API key to hear replies (not needed with the machine voice)"
       ],
@@ -184,7 +184,7 @@
         [
           "toggleKeycode / chordKeycode / lockKeycode",
           "105 / 65 / 62",
-          "X11 keycodes: Right Ctrl, Space (translate), Right Shift (hotkey on/off); list yours with xmodmap -pke"
+          "X11 only (under Wayland change the shortcuts in GNOME keyboard settings). X11 keycodes: Right Ctrl, Space (translate), Right Shift (hotkey on/off); list yours with xmodmap -pke"
         ],
         [
           "maxTapSeconds",
@@ -201,12 +201,12 @@
         "Your microphone audio goes to Deepgram while you record.",
         "The text of Claude's answer, or its condensed version, goes to Cartesia when replies are spoken. With the machine voice nothing is sent for speech.",
         "Translating and condensing use a small haiku call through your own Claude Code session.",
-        "The hotkey helper reads every X11 key and mouse-button event with xinput and keeps only Right Ctrl and its two chord keys; every other key is dropped on the spot, nothing is stored or written. It is about sixty lines: read bin/hotkey.py before enabling it."
+        "Under Wayland the hotkey helper reads no key at all: GNOME runs mya-key when its own shortcut is pressed, and only three words are accepted through a private socket. On X11 it reads every key and mouse-button event with xinput and keeps only Right Ctrl and its two chord keys; every other key is dropped on the spot, nothing is stored or written. Read bin/hotkey.py before enabling it."
       ],
       "limits": [
         "The chord's Space also reaches the terminal as Ctrl+Space.",
         "Recording is manual: it ends when you tap the key again, or after three minutes.",
-        "X11 only. Not tested on other desktops or distributions."
+        "Wayland: the one-command installer of the shortcuts is for GNOME; elsewhere bind any shortcut to bin/mya-key toggle, translate and lock yourself. Not tested on other desktops or distributions."
       ]
     }
   ]
